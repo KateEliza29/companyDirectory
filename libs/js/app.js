@@ -7,6 +7,7 @@
 //2- RESPONSIVITY FUNCTIONS
 //3- FILTER MENU
 // SORT MENU
+// SEARCH FUNCTION
 //4- PHP CALLS TO DATABASE
 //5- MODAL FUNCTIONS
 //6- CARD FUNCTIONS
@@ -19,6 +20,7 @@ let allResults;
 let currentResults;
 let isEdit;
 let currentStaffId;
+let isCards = true;
 
 //1- DOM EVENTS
 $('document').ready(function(){
@@ -36,7 +38,12 @@ $('document').ready(function(){
     });
 
     $('#reset').click(function() {
-        createCards(allResults);
+        if (isCards) {
+            createCards(allResults);
+        }
+        else {
+            createList(allResults);
+        }
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
         let cells = $('#menuInner td');
@@ -45,6 +52,19 @@ $('document').ready(function(){
                 $(cells[i]).html("");
             }
         }
+    });
+
+    //1.2 Top Menu
+    $('#gridView').click(function() {
+        isCards = true;
+        $('#sortMenu div').show();
+        createCards(currentResults);
+    });
+
+    $('#listView').click(function() {
+        isCards = false;
+        $('#sortMenu div').hide();
+        createList(currentResults);
     });
 
 
@@ -66,20 +86,31 @@ function displayIcons() {
 
 
 //3- FILTER MENU
-
+//Change to use currentResults
 $("td").click(function(e){
     addRemoveTicks(e);
     let passDown = [];
     let filterKeyword = $(e.target).hasClass('departments') ? "department" : "location";
     let filterArr;
-    console.log(filterKeyword);
     filterArr = setCriteria(e.target, filterKeyword);
     let filterResultsArr = filterResults(allResults, filterKeyword, filterArr, passDown);
     if (filterResultsArr.length == 0) {
-        createCards(allResults);
+        if (isCards) {
+            createCards(allResults);
+        }
+        else {
+            createList(allResults);
+        }
+
     }
     else {
-        createCards(filterResultsArr);
+        if (isCards) {
+            createCards(filterResultsArr);
+        }
+        else {
+            createList(filterResultsArr);
+        }
+
     }
 });
 
@@ -106,7 +137,6 @@ function setCriteria(target, keyword) {
     if (criteriaArr.includes($(target).text())) {
         let index = criteriaArr.indexOf($(target).text());
         criteriaArr.splice(index, 1);
-        console.log(criteriaArr);
     }
     else {
         criteriaArr.push($(target).text());
@@ -114,41 +144,77 @@ function setCriteria(target, keyword) {
     return criteriaArr;
 }
 
-    function filterResults(initialArr, filterKeyword, filterCriteriaArr, finalArr) {
-        for (let i=0; i<initialArr.length; i++) {
-            for (let j=0; j<filterCriteriaArr.length; j++) {
-                if (initialArr[i][filterKeyword] == filterCriteriaArr[j]) {
-                    finalArr.push(initialArr[i]);
-                }
+function filterResults(initialArr, filterKeyword, filterCriteriaArr, finalArr) {
+    for (let i=0; i<initialArr.length; i++) {
+        for (let j=0; j<filterCriteriaArr.length; j++) {
+            if (initialArr[i][filterKeyword] == filterCriteriaArr[j]) {
+                finalArr.push(initialArr[i]);
             }
         }
-        return finalArr;
     }
+    return finalArr;
+}
 
 
 //3- SORT MENU 
 let isAZ = true;
 
 $(document).on('click', '.sort', function(e){
-    let criteria = $(e.target).attr('id') == "sortName" ? "lname" : $(e.target).attr('id') == "sortLocation" ? "location" : "department";
-    console.log(criteria); 
+    let criteria = $(e.target).text() == "Name" ? "lname" : $(e.target).text() == "Location" ? "location" : "department";
     sortBy(criteria);
 });
 
 function sortBy(criteria) {
     if (isAZ) {
         currentResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-        console.log(currentResults);
         isAZ = false;
-        createCards(currentResults);
+        if (isCards) {
+            createCards(currentResults);
+        }
+        else {
+            createList(currentResults);
+        }
+
     }
     else {
         currentResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-        console.log(currentResults);
         isAZ = true;
-        createCards(currentResults);
+        if (isCards) {
+            createCards(currentResults);
+        }
+        else {
+            createList(currentResults);
+        }
+
     }
 
+}
+
+//SEARCH FUNCTION
+$('#searchType').keyup(function(e) {
+    let searchType = $('#searchSelect').val() == "firstNameSearch" ? "p.firstName" : $('#searchSelect').val() == "lastNameSearch" ? "p.lastName" : "p.jobTitle";
+    let searchTerm = ($('#searchType').val());
+    searchDatabase(searchTerm, searchType);
+});
+
+function searchDatabase(searchTerm, searchType) {
+    $.ajax({
+        url: "libs/php/search.php",
+        type: 'GET',
+        dataType: 'json', 
+        data: {
+            searchTerm: searchTerm,
+            searchType: searchType
+        },
+        success: function(result) {
+            if (isCards) {
+                createCards(result.data);
+            }
+            else {
+                createList(result.data);
+            } 
+        },
+    });
 }
 
 //5- MODAL FUNCTIONS
@@ -157,7 +223,6 @@ function sortBy(criteria) {
         isEdit = true;
         fillDetailsEditModal(e);
         currentStaffId = $(e.target).parent().parent().attr('id');
-        console.log(currentStaffId);
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
     });
@@ -182,13 +247,18 @@ function sortBy(criteria) {
         let addEmail = $('#email').val();
         let departmentList = ["None", "Accounting", "Business Development", "Engineering", "Human Resources", "Legal", "Marketing", "Product Management", "Research and Development", "Sales", "Services", "Support", "Training"];
         let addDepartment = departmentList.indexOf($('#department').val()); 
-        console.log(addDepartment);
+        // Format text. 
+
+
+        //Check text. 
         if (isEdit) {
             editStaffMember(addFName, addLName, addJob, addEmail, addDepartment, currentStaffId);
+            refreshCurrentSelection();
         } 
         else {
             addNewStaffMember(addFName, addLName, addJob, addEmail, addDepartment);
         }
+
     });
 
     //Delete buttons
@@ -196,11 +266,9 @@ function sortBy(criteria) {
         currentStaffId = $(e.target).parent().parent().attr('id');
         $('#deleteFName').text($(`#fname${currentStaffId}`).text());
         $('#deleteLName').text($(`#lname${currentStaffId}`).text());
-        console.log(currentStaffId);
     });
 
     $('#delete').click(function() {
-        console.log(currentStaffId);
         deleteStaffMember(currentStaffId);
     });
 
@@ -213,7 +281,8 @@ function sortBy(criteria) {
         let modalDepartment = $(`#department${num}`).text(); 
         let modalLocation = $(`#location${num}`).text(); 
         let modalJobTitle = $(`#jobTitle${num}`).text(); 
-        let modalEmail = $(`#email${num}`).text(); 
+        let modalEmailpre = $(`#emailIcon${num}`).attr('href'); 
+        let modalEmail = modalEmailpre.slice(7);
         $('#firstName').val(modalFName);
         $('#lastName').val(modalLName);
         $('#location').val(modalLocation);
@@ -225,8 +294,16 @@ function sortBy(criteria) {
 
 
 
-//CARD CREATION
+//Data Display
 function createCards(resultArray) {
+    $('#listSection').css({
+        height: 0,
+        width: 0
+    });
+    $('#cardSection').css({
+        height: '70vh',
+        width: '100%'
+    });
     $('#cardSection').html("");
     let num2 = 0;
     for (let i=0; i<resultArray.length; i++) {
@@ -245,9 +322,8 @@ function createCards(resultArray) {
                     <h3 id="department${num}">${cardDepartment}</h3>
                     <p id="location${num}">${cardLocation}</p>
                     <p id="jobTitle${num}">${cardJobTitle}</p>
-
                     <i class="fab fa-skype m-2" id="skype"></i>
-                    <i class="fas fa-envelope m-2" id="emailIcon${num}"></i>
+                    <a id="emailIcon${num}" href="mailto:${cardEmail}"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
             <p class="text-center" id="email${num}">${cardEmail}</p>
@@ -265,6 +341,62 @@ function createCards(resultArray) {
     currentResults = resultArray;
 }
 
+function createList(resultArray) {
+    $('#cardSection').css({
+        height: 0,
+        width: 0
+    });
+    $('#listSection').css({
+        display: 'block',
+        height: '70vh',
+        width: '100%'
+    });
+    $('#listDisplay tbody').html("");
+    $('#cardSection').html("");
+    let num2 = 0;
+    for (let i=0; i<resultArray.length; i++) {
+        let num = resultArray[i].id;
+        let listFName = resultArray[i].firstName;
+        let listLName = resultArray[i].lastName;
+        let listDepartment = resultArray[i].department; 
+        let listLocation = resultArray[i].location;
+        let listJobTitle = resultArray[i].jobTitle;
+        let listEmail = resultArray[i].email;
+        $('#listDisplay').append(`<tr id="${num}">
+            <td><span class="p-0" id="fname${num}">${listFName}</span><span class="p-0" id="lname${num}"> ${listLName}</span></td>
+            <td><a id="emailIcon${num}" href="mailto:${listEmail}"><i class="fas fa-envelope"></i></a></td>
+            <td><p id="jobTitle${num}">${listJobTitle}</p></td>
+            <td><p id="location${num}">${listDepartment}</p></td>
+            <td id="department${num}">${listLocation}</td>
+            <td><i data-bs-toggle="modal" data-bs-target="#addUpdateModal" class="fas fa-pen edit"></i> <i data-bs-toggle="modal" data-bs-target="#deleteModal" class="fas fa-trash-alt delete"></i></td>
+        </tr>`);
+
+        if (num2 >= 70) {
+            num2 = 0;
+        }
+        num2++;
+    }
+    $('#resultNum').text(resultArray.length);
+    currentResults = resultArray;
+}
+
+//GENERAL FUNCTIONALITY
+function refreshCurrentSelection() {
+    //go through allresults, identify that id, push to current
+    allResults = getAllDetails();
+    for (let i=0; i<allResults.length; i++) {
+        if (allResults[i].id == currentStaffId) {
+            currentResults.push(allResults[i]);
+        }
+    }
+    if (isCards) {
+        createCards(currentResults);
+    }
+    else {
+        createList(currentResults);
+    } 
+}
+
 //PHP CALLS TO DATABASE
     //Create
     function addNewStaffMember(fname, lname, job, email, department) {
@@ -280,7 +412,6 @@ function createCards(resultArray) {
                 department: department
             },
             success: function(result) {
-            console.log(result);
             if (result.status.code == 200) {
                 $("#addUpdateBody").append(`<div class="alert alert-success" role="alert">
                     ${fname} ${lname}, ${job} has been added to the database!
@@ -313,15 +444,26 @@ function createCards(resultArray) {
             success: function(result) {
             console.log(result);
                 allResults = result.data;
-                let passDown = result.data;
-                createCards(passDown);
+                if (isCards) {
+                    $('#cardSection').show();
+                    $('#listSection').hide();
+                    createCards(allResults);
+                }
+                else {
+                    $('#cardSection').css({
+                        height: 0,
+                        width: 0
+                    });
+                    $('#listSection').show();
+                    createList(allResults);
+                }
+
             },
         });
     }
 
     //Update
     function editStaffMember(fname, lname, job, email, department, id) {
-        console.log(currentStaffId);
         $.ajax({
             url: "libs/php/updateStaffMember.php",
             type: 'POST',
@@ -335,7 +477,6 @@ function createCards(resultArray) {
                 id: id
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#addUpdateBody").append(`<div class="alert alert-success" id="confirmation" role="alert">
                         ${fname} ${lname}, ${job} has been updated!
@@ -370,7 +511,6 @@ function createCards(resultArray) {
                 id: id 
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#deleteModalBody").append(`<div class="alert alert-success" role="alert">
                         Staff member has been deleted.
