@@ -1,0 +1,217 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: rgba(240,109,6, 0.1);
+}
+
+@media only screen and (min-width: 1180px) {
+    body {
+        overflow: hidden;
+    }
+}
+
+/* Fonts */
+h1 {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1.9rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px white;
+}
+
+h2 {
+    margin: 0px;
+    font-size: 1.3rem;
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-weight: bold;
+}
+
+h3 {
+    margin: 0px;
+    font-size: 1.2rem;
+    font-family: 'Raleway', sans-serif;
+}
+
+h4 {
+    font-family: 'Montserrat Alternates', sans-serif;
+}
+
+p {
+    margin: 0px;
+    font-family: 'Raleway', sans-serif;
+}
+
+i,
+tr, 
+#sortMenu div {
+    cursor: pointer;
+}
+
+/* Header */
+
+.headerBG {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(rgb(255, 75, 75), rgb(238, 137, 60));
+    transform: skewY(3deg);
+    transform-origin: top right;
+    z-index: -5;
+}
+
+header i {
+    font-size: 1.5rem;
+}
+
+input, 
+select {
+    height: 30px;
+    border-radius: 5px;
+    outline: none;
+    padding: 2px;
+    margin: 2px;
+}
+
+#dropDown {
+    max-width: 120px;
+}
+
+@media only screen and (min-width: 750px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Main */
+#sortMenu {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.8rem;
+}
+
+.cardContainer {
+    margin: 20px 0px 0px;
+}
+
+.staffMember {
+    min-width: 300px;
+    max-width: 400px;
+}
+
+img, 
+.staffMember {
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+img {
+    width: 100px;
+    height: 100px;
+}
+
+button i, 
+button {
+    font-size: 0.8rem;
+}
+
+button {
+    width: 150px;
+    font-family: 'Raleway', sans-serif;
+}
+
+.cardText i {
+    font-size: 1.6rem;
+}
+
+@media only screen and (min-width: 1180px) {
+    main {
+        width: calc(100vw - 400px);
+        float: right; 
+    }
+
+    #sortMenu {
+        font-size: 1rem;
+    }
+
+    .cardContainer {
+        width: 100%;
+        height: 70vh;
+        overflow-y: scroll;
+    }
+
+    .staffMember {
+        width: 310px;
+    }
+}
+
+/* Filter Menu */
+#sideMenu {
+    position: fixed;
+    top:0;
+    left: 0;
+    z-index: 1;
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(90deg, rgba(34, 34, 34, 1), rgba(37, 37, 37, 1));
+    border-radius: 0px 5px 5px 0px;
+    overflow: auto;
+}
+
+#menuInner {
+    margin-top: 20px;
+}
+
+tr {
+    font-size: 0.9rem;
+}
+
+#sideMenu .right {
+    max-width: 30px;
+}
+
+label, 
+#menuInner h2 {
+    color: white;
+    font-size: 1.2rem;
+    font-family: 'Raleway', sans-serif;
+}
+
+#departmentTable tr td, 
+#locationTable tr td {
+    padding: 6px 30px;
+}
+
+@media only screen and (min-width: 1180px) {
+    #sideMenu {
+        z-index: -10;
+    }
+    #menuInner {
+        margin-top: 120px;
+    }
+}
+
+/* Add/Edit Screen */
+select,
+input {
+    font-family: 'Raleway', sans-serif;
+}
+
+#firstName, 
+#lastName,
+#location, 
+#department,
+#jobTitle, 
+#email {
+    border: none;
+    border-bottom: 1px solid black;
+    border-radius: 0px;
+    width: 100%;
+}
+
+.modal-body label {
+    color: black;
+}

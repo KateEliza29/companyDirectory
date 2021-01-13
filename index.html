@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--Favicon-->
+    <!--Bootstrap-->
+    <link rel="stylesheet" href="vendors/bootstrap.min.css">
+    <!--Custom CSS-->
+    <link rel="stylesheet" href="libs/css/style.css">
+    <!--Font Awesome-->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+    <!--Fonts-->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates&family=Raleway&display=swap" rel="stylesheet">
+    <title>Company Directory</title>
+</head>
+<body>
+    <!--Header-->
+    <section class="head">
+        <div class="headerBG"></div>
+        <header class="d-flex flex-row justify-content-around align-items-center m-2">
+            <i class="fas fa-bars" id="menu"></i>
+            <h1 class="m-3 text-nowrap">Company Directory</h1>
+            <i class="fas fa-user-plus" id="new" data-bs-toggle="modal" data-bs-target="#addUpdateModal"></i> 
+        </header>
+
+        <!--Search--> 
+        <nav class="d-flex flex-row justify-content-center justify-content-md-end m-2 align-items-center" id="searchBar">
+            <i class="fas fa-th-large m-1"></i>
+            <i class="fas fa-list-ul m-1"></i>
+            <input type="text" id="search">
+            <select id="dropDown">
+                <option>First Name</option>
+                <option>Last Name</option>
+                <option>Job Title</option>
+            </select>
+        </nav>
+    </section>
+
+    <!--Filter Menu-->
+    <div id="sideMenu">
+        <button type="button" class="btn-close m-2 float-end bg-light" aria-label="Close" id="close"></button>
+        <div id="menuInner">
+            <button class="m-3 p-1 btn btn-outline-light btn-sm" id="reset"><i class="fas fa-undo m-1"></i>Reset</button>
+            <h2 class="m-2">Locations</h2>
+            <table class="table table-dark table-striped table-hover" id="locationTable">
+                <tr><td class="filter locations">London</td><td class="text-end"></></td></tr>
+                <tr><td class="filter locations">Munich</td><td class="text-end"></td></tr>
+                <tr><td class="filter locations">New York</td><td class="text-end"></td></tr>
+                <tr><td class="filter locations">Paris</td><td class="text-end"></td></tr>
+                <tr><td class="filter locations">Rome</td><td class="text-end"></td></tr>
+            </table>
+            <h2 class="m-2">Departments</h2>
+            <table class="table table-dark table-striped table-hover" id="departmentTable">
+                <tr><td class="filter text-nowrap departments">Accounting</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Business Development</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Engineering</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Human Resources</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Legal</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Marketing</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Product Management</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Research and Development</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Sales</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Services</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Support</td><td class="text-end right"></td></tr>
+                <tr><td class="filter text-nowrap departments">Training</td><td class="text-end right"></td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!--Sort Menu-->
+    <main class="d-flex flex-column align-items-center align-items-md-end"> 
+        <div class="d-flex flex-row m-2 mt-5 justify-content-center" id="sortMenu">
+            <p class="m-2"><span id="resultNum">72</span> results</p>
+            <div class="m-2 sort" id="sortName">Name <i class="fas fa-sort"></i></div>
+            <div class="m-2 sort" id="sortDepartment">Department <i class="fas fa-sort"></i></div>
+            <div class="m-2 sort" id="sortLocation">Location <i class="fas fa-sort"></i></div>
+        </div>
+
+        <!--Card Container-->
+        <section class="cardContainer d-flex flex-row flex-wrap justify-content-center p-0" id="cardSection">       
+
+
+        </section>
+
+    </main> 
+    <!--Add New Modal-->
+    <section>
+        <div class="modal fade" id="addUpdateModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h4 class="modal-title" id="addUpdateLabel">Add New Staff Member</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="addUpdateBody">
+                    <form method="POST" action="#" class="m-4">
+                            <input type="text" id="firstName" placeholder="First Name" class="mb-4">
+                            <input type="text" id="lastName" placeholder="Last Name" class="mb-4">
+                            <input type="email" id="email" name="email" placeholder="email@email.com" class="mb-4">
+                            <select class="mb-4" id="location">
+                                <option value="chooseLocation" selected disabled>Choose a Location</option>
+                                <option value="London">London</option>
+                                <option value="Munich">Munich</option>
+                                <option value="New York">New York</option>
+                                <option value="Paris">Paris</option>
+                                <option value="Rome">Rome</option>
+                            </select>
+                            <select class="mb-4" id="department">
+                                <option value="chooseDepartment" selected disabled>Choose a Department</option>
+                                <option value="Accounting">Accounting</option>
+                                <option value="Business Development">Business Development</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Product Management">Product Management</option>
+                                <option value="Research and Development">Research and Development</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Services">Services</option>
+                                <option value="Support">Support</option>
+                                <option value="Training">Training</option>
+                            </select>
+                            <input type="text" id="jobTitle" placeholder="Job Title" class="mb-5">
+                            <label for="uploadImage" class="form-label">Choose an Image File</label>
+                            <input class="form-control" type="file" id="uploadImage">
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal"><i class="far fa-window-close m-1"></i>Cancel</button>
+                <button type="button" class="btn btn-outline-success" id="addUpdateConfirm"><i class="fas fa-save m-1"></i>Add</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!--Delete Person Modal-->
+    <section>
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="deleteLabel">Delete Staff Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="deleteModalBody">
+                <p>You are about to delete <span id="deleteFName"></span><span id="deleteLName"></span>.</p>
+                <p>Are you sure you want to delete this person?</p>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="far fa-window-close m-1"></i>Cancel</button>
+                <button type="button" class="btn btn-outline-danger" id="delete"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!--Footer-->
+
+
+
+    
+
+
+
+
+
+    <script src="vendors/jquery-3.5.1.min.js"></script>
+    <script src="vendors/bootstrap.min.js"></script>
+    <script src="libs/js/app.js"></script>
+</body>
+</html>
