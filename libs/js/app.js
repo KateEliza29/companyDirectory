@@ -24,6 +24,7 @@ let currentStaffId;
 let isEdit;
 let isCards = true;
 let isAZ = true;
+let isFiltered = false;
 
 let firstName;
 let lastName;
@@ -49,6 +50,7 @@ $('document').ready(function(){
 
     $('#reset').click(function() {
         currentSelection = allResults;
+        isFiltered = false;
         if (isCards) {
             createCards(currentSelection); //checked
         }
@@ -158,14 +160,17 @@ function filter() {
     }
     if (filterSearchResults.length == 0 && departmentFilterCriteria.length > 0 || locationFilterCriteria.length > 0) {
         displayResults(filterSearchResults);
+        isFiltered = true;
     }
     else if (filterSearchResults.length == 0 && departmentFilterCriteria.length == 0 && locationFilterCriteria.length == 0) {
         displayResults(currentSelection);
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
+        isFiltered = false;
     }
     else {
         displayResults(filterSearchResults);
+        isFiltered = true;
     }
 
 }
@@ -176,21 +181,35 @@ $(document).on('click', '.sort', function(e){
     sortBy(criteria);
 });
 
+//REFACTOR THIS
 function sortBy(criteria) {
-    if (isAZ) {
-        currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-        isAZ = false;
-        displayResults(currentSelection);
+    if (isFiltered) {
+        if (isAZ) {
+            filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            isAZ = false;
+            displayResults(filterSearchResults);
+        }
+        else {
+            filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            isAZ = true;
+            displayResults(filterSearchResults);
+        }
     }
     else {
-        currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-        isAZ = true;
+        if (isAZ) {
+            currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            isAZ = false;
             displayResults(currentSelection);
+        }
+        else {
+            currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            isAZ = true;
+            displayResults(currentSelection);
+        }
     }
 }
 
 //SEARCH FUNCTION
-// COME BACK TO THIS ONE. SEARCH RESULTS NEED TO BE STORED GLOBALLY SO THAT THEY CAN BE USED TO REFRESH WHEN NEW/EDIT/DELETE IS PERFORMED.
 $('#searchType').keyup(function(e) {
     let searchType = $('#searchSelect').val() == "firstNameSearch" ? "p.firstName" : $('#searchSelect').val() == "lastNameSearch" ? "p.lastName" : "p.jobTitle";
     let searchTerm = ($('#searchType').val());
@@ -247,15 +266,18 @@ function searchDatabase(searchTerm, searchType) {
         jobTitle = $('#jobTitle').val();
         email = $('#email').val();
         department = departmentList.indexOf($('#department').val()); 
-        // Format text. 
-        //Check text. 
+        //Check inputs. 
         if (isEdit) {
-            editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
-            //Refresh with new current selection
+            if (firstName && lastName && jobTitle && email && department) {
+                editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
+                //Refresh with new current selection
+            }
         } 
         else {
-            addNewStaffMember(firstName, lastName, jobTitle, email, department);
-            //Refresh with new current selection
+            if (firstName && lastName && jobTitle && email && department) {
+                addNewStaffMember(firstName, lastName, jobTitle, email, department);
+                //Refresh with new current selection
+            }
         }
 
     });
@@ -382,23 +404,15 @@ function refreshCurrentSelection() {
     //Run the result through the filter system. 
     filter();
     //Save this new array as the currentSelection. 
-
     //Create new cards. 
     //displayResults(currentSelection)
 }
 
 function displayResults(results) {
     if (isCards) {
-        //$('#cardSection').show();
-        //$('#listSection').hide();
         createCards(results);
     }
     else {
-        //$('#cardSection').css({
-          //  height: 0,
-            //width: 0
-        //});
-        $('#listSection').show();
         createList(results);
     } 
 }
@@ -419,24 +433,34 @@ function displayResults(results) {
             },
             success: function(result) {
             if (result.status.code == 200) {
-                $("#addUpdateBody").append(`<div class="alert alert-success" role="alert">
+                $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
+
                     ${fname} ${lname}, ${job} has been added to the database!
                 </div>`);
                 currentStaffId = result.data.id;
                 setTimeout(function() { 
                     $('#addUpdateModal').modal('hide');
+                    $('#alert').fadeOut('fast');
                 }, 1500);
 
             }
             else if (result.status.code == 400 || result.status.code == 300) {
-                $("#addUpdateBody").append(`<div class="alert alert-danger" role="alert">
+                $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
                     ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
                 </div>`);
+                setTimeout(function() { 
+                    $('#addUpdateModal').modal('hide');
+                    $('#alert').fadeOut('fast');
+                }, 1500);
             }
             else if (result.status.code == 202) {
-                $("#addUpdateBody").append(`<div class="alert alert-warning" role="alert">
+                $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
                     ${fname} ${lname}, ${job} already exists.
                 </div>`);
+                setTimeout(function() { 
+                    $('#addUpdateModal').modal('hide');
+                    $('#alert').fadeOut('fast');
+                }, 1500);
             }
             },
         });
@@ -473,24 +497,32 @@ function displayResults(results) {
             },
             success: function(result) {
                 if (result.status.code == 200) {
-                    $("#addUpdateBody").append(`<div class="alert alert-success" id="confirmation" role="alert">
+                    $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
                     setTimeout(function() { 
                         $('#addUpdateModal').modal('hide');
-                        $('#confirmation').fadeOut('fast');
+                        $('#alert').fadeOut('fast');
                     }, 1500);
 
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
-                    $("#addUpdateBody").append(`<div class="alert alert-danger" role="alert">
+                    $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
                         ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
                     </div>`);
+                    setTimeout(function() { 
+                        $('#addUpdateModal').modal('hide');
+                        $('#alert').fadeOut('fast');
+                    }, 1500);
                 }
                 else if (result.status.code == 202) {
-                    $("#addUpdateBody").append(`<div class="alert alert-warning" role="alert">
+                    $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
                         ${fname} ${lname}, ${job} already exists.
                     </div>`);
+                    setTimeout(function() { 
+                        $('#addUpdateModal').modal('hide');
+                        $('#alert').fadeOut('fast');
+                    }, 1500);
                 }
             },
         });
