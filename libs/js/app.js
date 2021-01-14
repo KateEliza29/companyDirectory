@@ -207,7 +207,6 @@ function sortBy(criteria) {
             displayResults(currentSelection);
         }
     }
-
 }
 
 //SEARCH FUNCTION
@@ -435,6 +434,7 @@ function displayResults(results) {
             success: function(result) {
             if (result.status.code == 200) {
                 $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
+
                     ${fname} ${lname}, ${job} has been added to the database!
                 </div>`);
                 currentStaffId = result.data.id;
