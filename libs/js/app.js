@@ -202,29 +202,24 @@ $(document).on('click', '.sort', function(e){
     sortBy(criteria);
 });
 
-
 function sortBy(criteria) {
-    if (isFiltered) {
-        if (isAZ) {
-            filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-            isAZ = false;
+    if (isAZ) {
+        filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+        isAZ = false;
+        if (isFiltered) {
             displayResults(filterSearchResults);
         }
         else {
-            filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-            isAZ = true;
-            displayResults(filterSearchResults);
+            displayResults(currentSelection);
         }
     }
     else {
-        if (isAZ) {
-            currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-            isAZ = false;
-            displayResults(currentSelection);
+        filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+        isAZ = true;
+        if (isFiltered) {
+            displayResults(filterSearchResults);
         }
         else {
-            currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-            isAZ = true;
             displayResults(currentSelection);
         }
     }
@@ -481,7 +476,6 @@ function alertTimeout() {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout();
-
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
