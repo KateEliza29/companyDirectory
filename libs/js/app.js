@@ -442,7 +442,6 @@ function alertTimeout() {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout();
-
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
