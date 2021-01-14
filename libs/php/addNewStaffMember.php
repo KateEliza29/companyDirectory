@@ -31,33 +31,46 @@
 		exit;
 
 	}	
+//ADDED IN STUFF STARTS HERE
 
-	$query = 'INSERT INTO personnel (firstName, lastName, jobTitle, email, departmentID) VALUES("' . $_REQUEST['firstName'] . '","' . $_REQUEST["lastName"] . '", "' . $_REQUEST["jobTitle"] . '", "' . $_REQUEST["email"] . '", ' . $_REQUEST["department"] . ')';
-	$result = $conn->query($query);
-	$id = $conn->insert_id;
+	$q = 'SELECT * from personnel where firstName= "' . $_REQUEST['firstName'] . '" AND lastName = "' . $_REQUEST['lastName'] . '"';
+	$result = $conn->query($q);
 
-	
-	if (!$result) {
-
-		$output['status']['code'] = "400";
+	if(mysqli_num_rows($result) > 0)
+	{
+		$output['status']['code'] = "202";
 		$output['status']['name'] = "executed";
-		$output['status']['description'] = "query failed";	
-		$output['data'] = [];
-
-		mysqli_close($conn);
-
-		echo json_encode($output); 
-
-		exit;
-
+		$output['status']['description'] = "user exists";
+		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
+	}
+	else {
+		$query = 'INSERT INTO personnel (firstName, lastName, jobTitle, email, departmentID) VALUES("' . $_REQUEST['firstName'] . '","' . $_REQUEST["lastName"] . '", "' . $_REQUEST["jobTitle"] . '", "' . $_REQUEST["email"] . '", ' . $_REQUEST["department"] . ')';
+		$result = $conn->query($query);
+		$id = $conn->insert_id;
+	
+		
+		if (!$result) {
+	
+			$output['status']['code'] = "400";
+			$output['status']['name'] = "executed";
+			$output['status']['description'] = "query failed";	
+			$output['data'] = [];
+	
+			mysqli_close($conn);
+	
+			echo json_encode($output); 
+	
+			exit;
+	
+		}
+	
+		$output['status']['code'] = "200";
+		$output['status']['name'] = "ok";
+		$output['status']['description'] = "success";
+		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
+		$output['data'] = [$id];
 	}
 
-	$output['status']['code'] = "200";
-	$output['status']['name'] = "ok";
-	$output['status']['description'] = "success";
-	$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
-	$output['data'] = [$id];
-	
 	mysqli_close($conn);
 
 	echo json_encode($output); 

@@ -105,11 +105,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="addUpdateBody">
-                    <form method="POST" action="#" class="m-4" id="addUpdateForm">
-                            <input type="text" id="firstName" placeholder="First Name" class="mb-4 text-capitalize" required>
-                            <input type="text" id="lastName" placeholder="Last Name" class="mb-4 text-capitalize" required>
-                            <input type="email" id="email" placeholder="email@email.com" class="mb-4" required>
-                            <select class="mb-4" id="location" disabled>
+                    <form method="POST"  class="m-4" id="addUpdateForm">
+                            <input type="text" id="firstName" name="firstName" placeholder="First Name" class="mb-4 text-capitalize" required>
+                            <input type="text" id="lastName" name="lastName" placeholder="Last Name" class="mb-4 text-capitalize" required>
+                            <input type="email" id="email" name="email" placeholder="email@email.com" class="mb-4" required>
+                            <select class="mb-4" id="location" name="location" disabled>
                                 <option value="chooseLocation" selected disabled>Choose a Location</option>
                                 <option value="London">London</option>
                                 <option value="Munich">Munich</option>
@@ -117,7 +117,7 @@
                                 <option value="Paris">Paris</option>
                                 <option value="Rome">Rome</option>
                             </select>
-                            <select class="mb-4" id="department" required>
+                            <select class="mb-4" id="department" name="department" required>
                                 <option value="chooseDepartment" selected disabled>Choose a Department</option>
                                 <option value="Accounting">Accounting</option>
                                 <option value="Business Development">Business Development</option>
@@ -132,7 +132,7 @@
                                 <option value="Support">Support</option>
                                 <option value="Training">Training</option>
                             </select>
-                            <input type="text" id="jobTitle" placeholder="Job Title" class="mb-5 text-capitalize" required>
+                            <input type="text" id="jobTitle" name="jobTitle" placeholder="Job Title" class="mb-5 text-capitalize" required>
                             <label for="uploadImage" class="form-label">Choose an Image File</label>
                             <input class="form-control" type="file" id="uploadImage">
                         </form>
