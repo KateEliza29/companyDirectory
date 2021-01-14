@@ -33,8 +33,9 @@
 	}	
 
 	$query = 'INSERT INTO personnel (firstName, lastName, jobTitle, email, departmentID) VALUES("' . $_REQUEST['firstName'] . '","' . $_REQUEST["lastName"] . '", "' . $_REQUEST["jobTitle"] . '", "' . $_REQUEST["email"] . '", ' . $_REQUEST["department"] . ')';
-
 	$result = $conn->query($query);
+	$id = $conn->insert_id;
+
 	
 	if (!$result) {
 
@@ -55,7 +56,7 @@
 	$output['status']['name'] = "ok";
 	$output['status']['description'] = "success";
 	$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
-	$output['data'] = [];
+	$output['data'] = [$id];
 	
 	mysqli_close($conn);
 
