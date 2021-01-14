@@ -23,7 +23,10 @@
         <header class="d-flex flex-row justify-content-around align-items-center m-2">
             <a href="#"><i class="fas fa-bars" id="menu"></i></a>
             <h1 class="m-3 text-nowrap">Company Directory</h1>
+            <div>
             <a href="#"><i class="fas fa-user-plus" id="new" data-bs-toggle="modal" data-bs-target="#addUpdateModal"></i></a>
+            <a href="#"><i class="fas fa-cog" id="settings" data-bs-toggle="modal" data-bs-target="#settingsModal"></i></a>
+            </div>
         </header>
 
         <!--Search--> 
@@ -154,7 +157,7 @@
             <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                <h5 class="modal-title" id="deleteLabel">Delete Staff Member</h5>
+                <h4 class="modal-title" id="deleteLabel">Delete Staff Member</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="deleteModalBody">
@@ -164,6 +167,90 @@
                 <div class="modal-footer">
                 <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="far fa-window-close m-1"></i>Cancel</button>
                 <button type="button" class="btn btn-outline-danger" id="delete"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <!--Settings Menu-->
+    <section>
+        <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h4 class="modal-title" id="settingsLabel"><i class="fas fa-cog m-2"></i>Settings</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="settingsModalBody">
+                    <div class="container mt-3 border-bottom" id="addNewDepartment">
+                        <h5><i class="fas fa-plus-circle m-1"></i>Add New Department</h5>
+                        <form>
+                            <input type="text" id="newDepartment" placeholder="Department Name" required>
+                            <input type="text" id="newLocation" placeholder="Location" required>
+                            <button type="submit" class="btn btn-outline-success my-3 mx-0" id="addDeparment"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                        </form>
+                    </div>
+                    <div class="container mt-3 border-bottom" id="addNewDepartment">
+                        <h5><i class="fas fa-pen m-1"></i>Edit Department</h5>
+                        <form>
+                            <select id="departmentToChange">
+                                <option value="chooseDepartment" selected disabled>Choose a Department</option>
+                                <option value="Accounting">Accounting</option>
+                                <option value="Business Development">Business Development</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Product Management">Product Management</option>
+                                <option value="Research and Development">Research and Development</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Services">Services</option>
+                                <option value="Support">Support</option>
+                                <option value="Training">Training</option>
+                            </select>
+                            <input type="text" id="updateDepartmentLocation" placeholder="New Location" required>
+                            <button type="submit" class="btn btn-outline-success my-3 mx-0" id="editDepartment"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                        </form>
+                    </div>
+                    <div class="container mt-3 border-bottom" id="deleteDepartment">
+                        <h5><i class="fas fa-trash-alt m-1"></i>Delete Department</h5>
+                        <form>
+                            <select id="departmentToDelete">
+                                <option value="chooseDepartment" selected disabled>Choose a Department</option>
+                                <option value="Accounting">Accounting</option>
+                                <option value="Business Development">Business Development</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Product Management">Product Management</option>
+                                <option value="Research and Development">Research and Development</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Services">Services</option>
+                                <option value="Support">Support</option>
+                                <option value="Training">Training</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-success my-3 mx-0" id="deleteDeparment"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                        </form>
+                    </div>
+                    <div class="container mt-3" id="deleteLocation">
+                        <h5><i class="fas fa-trash-alt m-1"></i>Delete Location</h5>
+                        <form>
+                            <select id="locationToDelete">
+                                <option value="chooseDepartment" selected disabled>Choose a Location</option>
+                                <option value="London">London</option>
+                                <option value="Munich">Munich</option>
+                                <option value="New York">New York</option>
+                                <option value="Paris">Paris</option>
+                                <option value="Rome">Rome</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-success my-3 mx-0" id="deleteDeparment"><i class="fas fa-thumbs-up m-1"></i>Confirm</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal"><i class="far fa-window-close m-1"></i>Cancel</button>
                 </div>
             </div>
             </div>

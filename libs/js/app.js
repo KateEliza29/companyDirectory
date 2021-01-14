@@ -17,6 +17,7 @@
 let departmentFilterCriteria = [];
 let locationFilterCriteria = [];
 let departmentList = ["None", "Accounting", "Business Development", "Engineering", "Human Resources", "Legal", "Marketing", "Product Management", "Research and Development", "Sales", "Services", "Support", "Training"];
+let locationList = ["None", "Rome", "Paris", "Rome", "London", "London", "New York", "Paris", "Paris", "New York", "London", "Munich", "Munich"];
 let allResults;
 let currentSelection;
 let filterSearchResults = [];
@@ -202,24 +203,29 @@ $(document).on('click', '.sort', function(e){
     sortBy(criteria);
 });
 
+
 function sortBy(criteria) {
-    if (isAZ) {
-        filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-        isAZ = false;
-        if (isFiltered) {
+    if (isFiltered) {
+        if (isAZ) {
+            filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            isAZ = false;
             displayResults(filterSearchResults);
         }
         else {
-            displayResults(currentSelection);
+            filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            isAZ = true;
+            displayResults(filterSearchResults);
         }
     }
     else {
-        filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-        isAZ = true;
-        if (isFiltered) {
-            displayResults(filterSearchResults);
+        if (isAZ) {
+            currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            isAZ = false;
+            displayResults(currentSelection);
         }
         else {
+            currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            isAZ = true;
             displayResults(currentSelection);
         }
     }
@@ -324,6 +330,14 @@ function searchDatabase(searchTerm, searchType) {
         console.log("After = " + firstName, lastName, department, staffLocation, jobTitle);
     }
 
+    //Change location on selection of department
+    $('#department').change(function() {
+        console.log("change triggered");
+        department = $(`#department`).val();
+        let departmentIndex = departmentList.indexOf(department);
+        $('#location').val(locationList[departmentIndex]);
+    });
+
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
         currentStaffId = $(e.target).attr('id').slice(-2);
@@ -336,7 +350,8 @@ function searchDatabase(searchTerm, searchType) {
 function createCards(resultArray) {
     $('#listSection').css({
         height: 0,
-        width: 0
+        width: 0,
+        display: 'none'
     });
     $('#cardSection').css({
         height: '70vh',
@@ -380,7 +395,6 @@ function createCards(resultArray) {
 }
 
 function createList(resultArray) {
-
     $('#cardSection').css({
         height: 0,
         width: 0,
@@ -476,6 +490,7 @@ function alertTimeout() {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout();
+
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">

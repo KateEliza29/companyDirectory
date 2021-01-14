@@ -38,6 +38,12 @@ h4 {
     font-family: 'Montserrat Alternates', sans-serif;
 }
 
+h5 {
+    font-family: 'Montserrat Alternates', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
 p {
     margin: 0px;
     font-family: 'Raleway', sans-serif;
@@ -132,7 +138,7 @@ button {
 }
 
 button {
-    width: 150px;
+    width: 135px;
     font-family: 'Raleway', sans-serif;
 }
 
@@ -211,7 +217,7 @@ button {
     }
 }
 
-/* Add/Edit Screen */
+/* Add/Edit/Settings Screen */
 select,
 input {
     font-family: 'Raleway', sans-serif;
@@ -222,7 +228,13 @@ input {
 #location, 
 #department,
 #jobTitle, 
-#email {
+#email,
+#newDepartment,
+#newLocation,
+#departmentToChange,
+#updateDepartmentLocation,
+#departmentToDelete,
+#locationToDelete {
     border: none;
     border-bottom: 1px solid black;
     border-radius: 0px;
