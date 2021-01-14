@@ -147,6 +147,9 @@ function addToFilterArray(target, keyword) {
 }
 
 function filter() {
+    console.log(departmentFilterCriteria);
+    console.log(locationFilterCriteria);
+    console.log(currentSelection);
     if (departmentFilterCriteria.length>0 && locationFilterCriteria.length>0) {
         filterSearchResults = currentSelection.filter(staff => departmentFilterCriteria.includes(staff.department) && locationFilterCriteria.includes(staff.location)); 
     }
@@ -156,14 +159,22 @@ function filter() {
     else if (departmentFilterCriteria.length==0 && locationFilterCriteria.length>0) {
         filterSearchResults = currentSelection.filter(staff => locationFilterCriteria.includes(staff.location)); 
     }
-    if (filterSearchResults.length == 0) {
+    console.log(filterSearchResults);
+    if (filterSearchResults.length == 0 && departmentFilterCriteria.length > 0 || locationFilterCriteria.length > 0) {
+        console.log("first option");
+        displayResults(filterSearchResults);
+    }
+    else if (filterSearchResults.length == 0 && departmentFilterCriteria.length == 0 && locationFilterCriteria.length == 0) {
+        console.log("second option");
         displayResults(currentSelection);
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
     }
     else {
+        console.log("last option");
         displayResults(filterSearchResults);
     }
+
 }
 
 //3- SORT MENU 
@@ -215,11 +226,12 @@ function searchDatabase(searchTerm, searchType) {
             searchType: searchType
         },
         success: function(result) {
+            filterSearchResults = result.data;
             if (isCards) {
-                createCards(result.data);
+                createCards(filterSearchResults);
             }
             else {
-                createList(result.data);
+                createList(filterSearchResults);
             } 
         },
     });
@@ -257,12 +269,13 @@ function searchDatabase(searchTerm, searchType) {
         // Format text. 
         //Check text. 
         if (isEdit) {
-            editStaffMember(addFName, addLName, addJob, addEmail, addDepartment, currentStaffId);
+            editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
             //Refresh with new current selection
         } 
         else {
-            addNewStaffMember(addFName, addLName, addJob, addEmail, addDepartment);
+            addNewStaffMember(firstName, lastName, jobTitle, email, department);
             //Refresh with new current selection
+            refreshCurrentSelection();
         }
 
     });
@@ -385,17 +398,15 @@ function createList(resultArray) {
 
 //GENERAL FUNCTIONALITY
 function refreshCurrentSelection() {
+    console.log("running refresh");
     //Get new results. 
     allResults = getAllDetails();
     //Run the result through the filter system. 
-    /*for (let i=0; i<allResults.length; i++) {
-        if (allResults[i].id == currentStaffId) {
-            currentResults.push(allResults[i]);
-        }
-    }*/
+    filter();
     //Save this new array as the currentSelection. 
+
     //Create new cards. 
-    displayResults(currentSelection)
+    //displayResults(currentSelection)
 }
 
 function displayResults(results) {
