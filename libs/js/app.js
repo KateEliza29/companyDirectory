@@ -147,9 +147,6 @@ function addToFilterArray(target, keyword) {
 }
 
 function filter() {
-    console.log(departmentFilterCriteria);
-    console.log(locationFilterCriteria);
-    console.log(currentSelection);
     if (departmentFilterCriteria.length>0 && locationFilterCriteria.length>0) {
         filterSearchResults = currentSelection.filter(staff => departmentFilterCriteria.includes(staff.department) && locationFilterCriteria.includes(staff.location)); 
     }
@@ -159,19 +156,15 @@ function filter() {
     else if (departmentFilterCriteria.length==0 && locationFilterCriteria.length>0) {
         filterSearchResults = currentSelection.filter(staff => locationFilterCriteria.includes(staff.location)); 
     }
-    console.log(filterSearchResults);
     if (filterSearchResults.length == 0 && departmentFilterCriteria.length > 0 || locationFilterCriteria.length > 0) {
-        console.log("first option");
         displayResults(filterSearchResults);
     }
     else if (filterSearchResults.length == 0 && departmentFilterCriteria.length == 0 && locationFilterCriteria.length == 0) {
-        console.log("second option");
         displayResults(currentSelection);
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
     }
     else {
-        console.log("last option");
         displayResults(filterSearchResults);
     }
 
@@ -185,27 +178,15 @@ $(document).on('click', '.sort', function(e){
 
 function sortBy(criteria) {
     if (isAZ) {
-        currentResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+        currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
         isAZ = false;
-        if (isCards) {
-            createCards(currentResults); //Checked
-        }
-        else {
-            createList(currentResults); //Checked
-        }
+        displayResults(currentSelection);
     }
     else {
-        currentResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+        currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
         isAZ = true;
-        if (isCards) {
-            createCards(currentResults); //checked
-        }
-        else {
-            createList(currentResults); //checked
-        }
-
+            displayResults(currentSelection);
     }
-
 }
 
 //SEARCH FUNCTION
@@ -275,7 +256,6 @@ function searchDatabase(searchTerm, searchType) {
         else {
             addNewStaffMember(firstName, lastName, jobTitle, email, department);
             //Refresh with new current selection
-            refreshCurrentSelection();
         }
 
     });
@@ -300,7 +280,6 @@ function searchDatabase(searchTerm, searchType) {
         jobTitle = $(`#jobTitle${currentStaffId}`).text(); 
         let emailpre = $(`#emailIcon${currentStaffId}`).attr('href'); 
         email = emailpre.slice(7);
-        console.log(firstName, lastName, department, staffLocation, jobTitle);
         $('#firstName').val(firstName);
         $('#lastName').val(lastName);
         $('#location').val(staffLocation);
@@ -398,7 +377,6 @@ function createList(resultArray) {
 
 //GENERAL FUNCTIONALITY
 function refreshCurrentSelection() {
-    console.log("running refresh");
     //Get new results. 
     allResults = getAllDetails();
     //Run the result through the filter system. 
@@ -441,7 +419,6 @@ function displayResults(results) {
             },
             success: function(result) {
             if (result.status.code == 200) {
-                console.log(result);
                 $("#addUpdateBody").append(`<div class="alert alert-success" role="alert">
                     ${fname} ${lname}, ${job} has been added to the database!
                 </div>`);
