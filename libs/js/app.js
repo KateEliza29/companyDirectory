@@ -16,11 +16,21 @@
 //GLOBAL VARIABLES
 let departmentFilterCriteria = [];
 let locationFilterCriteria = [];
+let departmentList = ["None", "Accounting", "Business Development", "Engineering", "Human Resources", "Legal", "Marketing", "Product Management", "Research and Development", "Sales", "Services", "Support", "Training"];
 let allResults;
-let currentResults;
-let isEdit;
+let currentSelection;
+let filterSearchResults = [];
 let currentStaffId;
+let isEdit;
 let isCards = true;
+let isAZ = true;
+
+let firstName;
+let lastName;
+let jobTitle;
+let email;
+let department;
+let staffLocation;
 
 //1- DOM EVENTS
 $('document').ready(function(){
@@ -38,11 +48,12 @@ $('document').ready(function(){
     });
 
     $('#reset').click(function() {
+        currentSelection = allResults;
         if (isCards) {
-            createCards(allResults);
+            createCards(currentSelection); //checked
         }
         else {
-            createList(allResults);
+            createList(currentSelection); //checked
         }
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
@@ -58,13 +69,13 @@ $('document').ready(function(){
     $('#gridView').click(function() {
         isCards = true;
         $('#sortMenu div').show();
-        createCards(currentResults);
+        createCards(currentResults); //checked
     });
 
     $('#listView').click(function() {
         isCards = false;
         $('#sortMenu div').hide();
-        createList(currentResults);
+        createList(currentResults); //checked
     });
 
 
@@ -86,79 +97,76 @@ function displayIcons() {
 
 
 //3- FILTER MENU
-//Change to use currentResults
-$("td").click(function(e){
+$('td').click(function(e) {
+    //Add ticks
     addRemoveTicks(e);
-    let passDown = [];
+    //Add criteria to location or department filter array.
     let filterKeyword = $(e.target).hasClass('departments') ? "department" : "location";
-    let filterArr;
-    filterArr = setCriteria(e.target, filterKeyword);
-    let filterResultsArr = filterResults(allResults, filterKeyword, filterArr, passDown);
-    if (filterResultsArr.length == 0) {
-        if (isCards) {
-            createCards(allResults);
-        }
-        else {
-            createList(allResults);
-        }
+    filterSearchResults = [];
+    addToFilterArray(e.target, filterKeyword);
+    //Filter current selection based on which selections have been made. 
+    filter();
 
-    }
-    else {
-        if (isCards) {
-            createCards(filterResultsArr);
-        }
-        else {
-            createList(filterResultsArr);
-        }
-
-    }
 });
 
 function addRemoveTicks(e) {
-    let target = e.target;
-    if ($(target).hasClass('filter')) {
-        if ($(target).next().html() == '') {
-            $(target).next().html('<i class="far fa-check-circle"></i>'); 
+    if ($(e.target).hasClass('filter')) {
+        if ($(e.target).next().html() == '') {
+            $(e.target).next().html('<i class="far fa-check-circle"></i>'); 
         }
         else {
-            $(target).next().html('');
+            $(e.target).next().html('');
         }
     }
 }
 
-function setCriteria(target, keyword) {
-    let criteriaArr;
-    if (keyword == "department") {
-        criteriaArr = departmentFilterCriteria;
-    }
-    else {
-        criteriaArr = locationFilterCriteria;
-    }
-    if (criteriaArr.includes($(target).text())) {
-        let index = criteriaArr.indexOf($(target).text());
-        criteriaArr.splice(index, 1);
-    }
-    else {
-        criteriaArr.push($(target).text());
-    }
-    return criteriaArr;
-}
-
-function filterResults(initialArr, filterKeyword, filterCriteriaArr, finalArr) {
-    for (let i=0; i<initialArr.length; i++) {
-        for (let j=0; j<filterCriteriaArr.length; j++) {
-            if (initialArr[i][filterKeyword] == filterCriteriaArr[j]) {
-                finalArr.push(initialArr[i]);
-            }
+//THIS CAN BE REFACTORED
+function addToFilterArray(target, keyword) {
+    if (keyword == 'department') {
+        //Remove the filter term if it already exists in the array. 
+        if (departmentFilterCriteria.includes($(target).text())) {
+            let index = departmentFilterCriteria.indexOf($(target).text());
+            departmentFilterCriteria.splice(index, 1);
+        }
+        //If the filter term does not already exist in the array, add it.
+        else {
+            departmentFilterCriteria.push($(target).text());
         }
     }
-    return finalArr;
+    else {
+        //Remove the filter term if it already exists in the array. 
+        if (locationFilterCriteria.includes($(target).text())) {
+            let index = locationFilterCriteria.indexOf($(target).text());
+            locationFilterCriteria.splice(index, 1);
+        }
+        //If the filter term does not already exist in the array, add it.
+        else {
+            locationFilterCriteria.push($(target).text());
+        }
+    }
 }
 
+function filter() {
+    if (departmentFilterCriteria.length>0 && locationFilterCriteria.length>0) {
+        filterSearchResults = currentSelection.filter(staff => departmentFilterCriteria.includes(staff.department) && locationFilterCriteria.includes(staff.location)); 
+    }
+    else if (departmentFilterCriteria.length>0 && locationFilterCriteria.length==0) {
+        filterSearchResults = currentSelection.filter(staff => departmentFilterCriteria.includes(staff.department)); 
+    }
+    else if (departmentFilterCriteria.length==0 && locationFilterCriteria.length>0) {
+        filterSearchResults = currentSelection.filter(staff => locationFilterCriteria.includes(staff.location)); 
+    }
+    if (filterSearchResults.length == 0) {
+        displayResults(currentSelection);
+        departmentFilterCriteria = [];
+        locationFilterCriteria = [];
+    }
+    else {
+        displayResults(filterSearchResults);
+    }
+}
 
 //3- SORT MENU 
-let isAZ = true;
-
 $(document).on('click', '.sort', function(e){
     let criteria = $(e.target).text() == "Name" ? "lname" : $(e.target).text() == "Location" ? "location" : "department";
     sortBy(criteria);
@@ -169,21 +177,20 @@ function sortBy(criteria) {
         currentResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
         isAZ = false;
         if (isCards) {
-            createCards(currentResults);
+            createCards(currentResults); //Checked
         }
         else {
-            createList(currentResults);
+            createList(currentResults); //Checked
         }
-
     }
     else {
         currentResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
         isAZ = true;
         if (isCards) {
-            createCards(currentResults);
+            createCards(currentResults); //checked
         }
         else {
-            createList(currentResults);
+            createList(currentResults); //checked
         }
 
     }
@@ -191,6 +198,7 @@ function sortBy(criteria) {
 }
 
 //SEARCH FUNCTION
+// COME BACK TO THIS ONE. SEARCH RESULTS NEED TO BE STORED GLOBALLY SO THAT THEY CAN BE USED TO REFRESH WHEN NEW/EDIT/DELETE IS PERFORMED.
 $('#searchType').keyup(function(e) {
     let searchType = $('#searchSelect').val() == "firstNameSearch" ? "p.firstName" : $('#searchSelect').val() == "lastNameSearch" ? "p.lastName" : "p.jobTitle";
     let searchTerm = ($('#searchType').val());
@@ -221,8 +229,8 @@ function searchDatabase(searchTerm, searchType) {
     //Edit and New Buttons
     $(document).on('click', '.edit', function(e){
         isEdit = true;
-        fillDetailsEditModal(e);
         currentStaffId = $(e.target).parent().parent().attr('id');
+        fillDetailsEditModal();
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
     });
@@ -241,22 +249,20 @@ function searchDatabase(searchTerm, searchType) {
     });
 
     $('#addUpdateConfirm').click(function() {
-        let addFName = $('#firstName').val();
-        let addLName = $('#lastName').val();
-        let addJob = $('#jobTitle').val();
-        let addEmail = $('#email').val();
-        let departmentList = ["None", "Accounting", "Business Development", "Engineering", "Human Resources", "Legal", "Marketing", "Product Management", "Research and Development", "Sales", "Services", "Support", "Training"];
-        let addDepartment = departmentList.indexOf($('#department').val()); 
+        firstName = $('#firstName').val();
+        lastName = $('#lastName').val();
+        jobTitle = $('#jobTitle').val();
+        email = $('#email').val();
+        department = departmentList.indexOf($('#department').val()); 
         // Format text. 
-
-
         //Check text. 
         if (isEdit) {
             editStaffMember(addFName, addLName, addJob, addEmail, addDepartment, currentStaffId);
-            refreshCurrentSelection();
+            //Refresh with new current selection
         } 
         else {
             addNewStaffMember(addFName, addLName, addJob, addEmail, addDepartment);
+            //Refresh with new current selection
         }
 
     });
@@ -273,25 +279,22 @@ function searchDatabase(searchTerm, searchType) {
     });
 
     //Modal contents
-    //Change 'num' to currentStaffId
-    function fillDetailsEditModal(e) {
-        let num = $(e.target).parent().parent().attr('id');
-        let modalFName = $(`#fname${num}`).text(); 
-        let modalLName = $(`#lname${num}`).text(); 
-        let modalDepartment = $(`#department${num}`).text(); 
-        let modalLocation = $(`#location${num}`).text(); 
-        let modalJobTitle = $(`#jobTitle${num}`).text(); 
-        let modalEmailpre = $(`#emailIcon${num}`).attr('href'); 
-        let modalEmail = modalEmailpre.slice(7);
-        $('#firstName').val(modalFName);
-        $('#lastName').val(modalLName);
-        $('#location').val(modalLocation);
-        $('#department').val(modalDepartment);
-        $('#jobTitle').val(modalJobTitle);
-        $('#email').val(modalEmail);
+    function fillDetailsEditModal() {
+        firstName = $(`#fname${currentStaffId}`).text(); 
+        lastName = $(`#lname${currentStaffId}`).text(); 
+        department = $(`#department${currentStaffId}`).text(); 
+        staffLocation = $(`#location${currentStaffId}`).text(); 
+        jobTitle = $(`#jobTitle${currentStaffId}`).text(); 
+        let emailpre = $(`#emailIcon${currentStaffId}`).attr('href'); 
+        email = emailpre.slice(7);
+        console.log(firstName, lastName, department, staffLocation, jobTitle);
+        $('#firstName').val(firstName);
+        $('#lastName').val(lastName);
+        $('#location').val(staffLocation);
+        $('#department').val(department);
+        $('#jobTitle').val(jobTitle);
+        $('#email').val(email);
     }
-
-
 
 
 //Data Display
@@ -307,26 +310,26 @@ function createCards(resultArray) {
     $('#cardSection').html("");
     let num2 = 0;
     for (let i=0; i<resultArray.length; i++) {
-        let num = resultArray[i].id;
-        let cardFName = resultArray[i].firstName;
-        let cardLName = resultArray[i].lastName;
-        let cardDepartment = resultArray[i].department; 
-        let cardLocation = resultArray[i].location;
-        let cardJobTitle = resultArray[i].jobTitle;
-        let cardEmail = resultArray[i].email;
-        $("#cardSection").append(`<section class="staffMember rounded bg-light m-2" id="${num}">
-            <h2 class="text-center mt-2"><span id="fname${num}"> ${cardFName}</span><span id="lname${num}"> ${cardLName} </span></h2>
+        currentStaffId = resultArray[i].id;
+        firstName = resultArray[i].firstName;
+        lastName = resultArray[i].lastName;
+        department = resultArray[i].department; 
+        staffLocation = resultArray[i].location;
+        jobTitle = resultArray[i].jobTitle;
+        email = resultArray[i].email;
+        $("#cardSection").append(`<section class="staffMember rounded bg-light m-2" id="${currentStaffId}">
+            <h2 class="text-center mt-2"><span id="fname${currentStaffId}"> ${firstName}</span><span id="lname${currentStaffId}"> ${lastName} </span></h2>
             <div class="d-flex flex-row m-2 text-center justify-content-center align-items-center">
                 <img class="m-2 rounded" src="https://i.pravatar.cc/100?img=${num2}">
                 <div class="m-2 cardText">
-                    <h3 id="department${num}">${cardDepartment}</h3>
-                    <p id="location${num}">${cardLocation}</p>
-                    <p id="jobTitle${num}">${cardJobTitle}</p>
+                    <h3 id="department${currentStaffId}">${department}</h3>
+                    <p id="location${currentStaffId}">${staffLocation}</p>
+                    <p id="jobTitle${currentStaffId}">${jobTitle}</p>
                     <i class="fab fa-skype m-2" id="skype"></i>
-                    <a id="emailIcon${num}" href="mailto:${cardEmail}"><i class="fas fa-envelope"></i></a>
+                    <a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
-            <p class="text-center" id="email${num}">${cardEmail}</p>
+            <p class="text-center" id="email${currentStaffId}">${email}</p>
             <div class="d-flex flex-row justify-content-center m-2">
                 <button class="m-2 p-1 btn btn-outline-dark edit" data-bs-toggle="modal" data-bs-target="#addUpdateModal"><i class="fas fa-pen"></i> Edit</button>
                 <button class="m-2 p-1 btn btn-outline-danger delete" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fas fa-trash-alt"></i> Delete</button>
@@ -355,19 +358,19 @@ function createList(resultArray) {
     $('#cardSection').html("");
     let num2 = 0;
     for (let i=0; i<resultArray.length; i++) {
-        let num = resultArray[i].id;
-        let listFName = resultArray[i].firstName;
-        let listLName = resultArray[i].lastName;
-        let listDepartment = resultArray[i].department; 
-        let listLocation = resultArray[i].location;
-        let listJobTitle = resultArray[i].jobTitle;
-        let listEmail = resultArray[i].email;
-        $('#listDisplay').append(`<tr id="${num}">
-            <td><span class="p-0" id="fname${num}">${listFName}</span><span class="p-0" id="lname${num}"> ${listLName}</span></td>
-            <td><a id="emailIcon${num}" href="mailto:${listEmail}"><i class="fas fa-envelope"></i></a></td>
-            <td><p id="jobTitle${num}">${listJobTitle}</p></td>
-            <td><p id="location${num}">${listDepartment}</p></td>
-            <td id="department${num}">${listLocation}</td>
+        currentStaffId = resultArray[i].id;
+        firstName = resultArray[i].firstName;
+        lastName = resultArray[i].lastName;
+        department = resultArray[i].department; 
+        staffLocation = resultArray[i].location;
+        jobTitle = resultArray[i].jobTitle;
+        email = resultArray[i].email;
+        $('#listDisplay').append(`<tr id="${currentStaffId}">
+            <td><span class="p-0" id="fname${currentStaffId}">${firstName}</span><span class="p-0" id="lname${currentStaffId}"> ${lastName}</span></td>
+            <td><a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a></td>
+            <td><p id="jobTitle${currentStaffId}">${jobTitle}</p></td>
+            <td><p id="location${currentStaffId}">${department}</p></td>
+            <td id="department${currentStaffId}">${staffLocation}</td>
             <td><i data-bs-toggle="modal" data-bs-target="#addUpdateModal" class="fas fa-pen edit"></i> <i data-bs-toggle="modal" data-bs-target="#deleteModal" class="fas fa-trash-alt delete"></i></td>
         </tr>`);
 
@@ -382,18 +385,32 @@ function createList(resultArray) {
 
 //GENERAL FUNCTIONALITY
 function refreshCurrentSelection() {
-    //go through allresults, identify that id, push to current
+    //Get new results. 
     allResults = getAllDetails();
-    for (let i=0; i<allResults.length; i++) {
+    //Run the result through the filter system. 
+    /*for (let i=0; i<allResults.length; i++) {
         if (allResults[i].id == currentStaffId) {
             currentResults.push(allResults[i]);
         }
-    }
+    }*/
+    //Save this new array as the currentSelection. 
+    //Create new cards. 
+    displayResults(currentSelection)
+}
+
+function displayResults(results) {
     if (isCards) {
-        createCards(currentResults);
+        //$('#cardSection').show();
+        //$('#listSection').hide();
+        createCards(results);
     }
     else {
-        createList(currentResults);
+        //$('#cardSection').css({
+          //  height: 0,
+            //width: 0
+        //});
+        $('#listSection').show();
+        createList(results);
     } 
 }
 
@@ -413,9 +430,11 @@ function refreshCurrentSelection() {
             },
             success: function(result) {
             if (result.status.code == 200) {
+                console.log(result);
                 $("#addUpdateBody").append(`<div class="alert alert-success" role="alert">
                     ${fname} ${lname}, ${job} has been added to the database!
                 </div>`);
+                currentStaffId = result.data.id;
                 setTimeout(function() { 
                     $('#addUpdateModal').modal('hide');
                 }, 1500);
@@ -444,20 +463,8 @@ function refreshCurrentSelection() {
             success: function(result) {
             console.log(result);
                 allResults = result.data;
-                if (isCards) {
-                    $('#cardSection').show();
-                    $('#listSection').hide();
-                    createCards(allResults);
-                }
-                else {
-                    $('#cardSection').css({
-                        height: 0,
-                        width: 0
-                    });
-                    $('#listSection').show();
-                    createList(allResults);
-                }
-
+                currentSelection = result.data;
+                displayResults(currentSelection);
             },
         });
     }
