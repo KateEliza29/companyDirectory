@@ -39,6 +39,14 @@ $('document').ready(function(){
     getAllDetails();
 });
 
+//Preloader
+$(window).on('load', function () {    
+    if ($('#preloader').length) {
+        $('#preloader').delay(100).fadeOut('slow', function () {
+            $(this).remove();
+        });
+    }});
+
     //1.1- Side menu
     $('#menu').click(function() {
         $('#sideMenu').toggle();
@@ -84,6 +92,7 @@ $('document').ready(function(){
 //2- RESPONSIVITY FUNCTIONS
 $(window).resize(function() {
     displayIcons();
+    reduceList();
 }); 
 
 function displayIcons() {
@@ -97,6 +106,16 @@ function displayIcons() {
     }
 }
 
+function reduceList() {
+    if (window.innerWidth <= 750) {
+        $('td:nth-child(2),th:nth-child(2)').hide();
+        $('td:nth-child(6),th:nth-child(6)').hide();
+    }
+    else {
+        $('td:nth-child(2),th:nth-child(2)').show();
+        $('td:nth-child(6),th:nth-child(6)').show();
+    }
+}
 
 //3- FILTER MENU
 $('td').click(function(e) {
@@ -177,11 +196,13 @@ function filter() {
 
 //3- SORT MENU 
 $(document).on('click', '.sort', function(e){
+    console.log("sort fired");
+    console.log(e);
     let criteria = $(e.target).text() == "Name" ? "lname" : $(e.target).text() == "Location" ? "location" : "department";
     sortBy(criteria);
 });
 
-//REFACTOR THIS
+
 function sortBy(criteria) {
     if (isFiltered) {
         if (isAZ) {
@@ -241,7 +262,7 @@ function searchDatabase(searchTerm, searchType) {
     //Edit and New Buttons
     $(document).on('click', '.edit', function(e){
         isEdit = true;
-        currentStaffId = $(e.target).parent().parent().attr('id');
+        currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id')
         fillDetailsEditModal();
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
@@ -252,34 +273,29 @@ function searchDatabase(searchTerm, searchType) {
         isEdit = false;
         $('#addUpdateLabel').html("<i class='fas fa-user-plus m-2'></i> Add New Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-user-plus m-2'></i> Add");
-        let fields = [$('#firstName'), $('#lastName'), $('#email'), $('#jobTitle')];
+        let fields = [$('#firstName'), $('#lastName'), $('#email'), $('#jobTitle'), $('#location'), $('#department')];
         for (let i=0; i<fields.length; i++) {
             fields[i].val("");
         }
-        $('#location').val("chooseLocation");
-        $('#department').val("chooseDepartment");
     });
 
-    $('#addUpdateConfirm').click(function() {
-        firstName = $('#firstName').val();
-        lastName = $('#lastName').val();
-        jobTitle = $('#jobTitle').val();
-        email = $('#email').val();
+    $("#addUpdateConfirm").click(function(e) {
+        firstName = $('#firstName').val().trim();
+        lastName = $('#lastName').val().trim();
+        jobTitle = $('#jobTitle').val().trim();
+        email = $('#email').val().trim();
         department = departmentList.indexOf($('#department').val()); 
-        //Check inputs. 
-        if (isEdit) {
-            if (firstName && lastName && jobTitle && email && department) {
+        if (firstName && lastName && jobTitle && email && department) {
+            if (isEdit) {
                 editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
                 //Refresh with new current selection
             }
-        } 
-        else {
-            if (firstName && lastName && jobTitle && email && department) {
+            else {
                 addNewStaffMember(firstName, lastName, jobTitle, email, department);
                 //Refresh with new current selection
             }
         }
-
+        e.preventDefault();
     });
 
     //Delete buttons
@@ -293,22 +309,32 @@ function searchDatabase(searchTerm, searchType) {
         deleteStaffMember(currentStaffId);
     });
 
-    //Modal contents
+    //Edit modal contents
     function fillDetailsEditModal() {
+        console.log(currentStaffId);
         firstName = $(`#fname${currentStaffId}`).text(); 
         lastName = $(`#lname${currentStaffId}`).text(); 
         department = $(`#department${currentStaffId}`).text(); 
-        staffLocation = $(`#location${currentStaffId}`).text(); 
+        staffLocation = $(`#location${currentStaffId}`).text();
         jobTitle = $(`#jobTitle${currentStaffId}`).text(); 
         let emailpre = $(`#emailIcon${currentStaffId}`).attr('href'); 
         email = emailpre.slice(7);
         $('#firstName').val(firstName);
         $('#lastName').val(lastName);
-        $('#location').val(staffLocation);
-        $('#department').val(department);
+        //$('#department').val(department);
+        $(`#department option[value="${department}"]`).attr('selected', 'selected');
+        $(`#location option[value="${staffLocation}"]`).attr('selected', 'selected');
         $('#jobTitle').val(jobTitle);
         $('#email').val(email);
+        console.log("After = " + firstName, lastName, department, staffLocation, jobTitle);
     }
+
+    /*Card Pop Up
+    $(document).on('click', '.staffRow', function(e){
+        currentStaffId = $(e.target).attr('id').slice(-2);
+        console.log(currentStaffId);
+        $('#cardModal').modal('show');
+    });*/
 
 
 //Data Display
@@ -331,15 +357,15 @@ function createCards(resultArray) {
         staffLocation = resultArray[i].location;
         jobTitle = resultArray[i].jobTitle;
         email = resultArray[i].email;
-        $("#cardSection").append(`<section class="staffMember rounded bg-light m-2" id="${currentStaffId}">
+        $("#cardSection").append(`<section class="staffMember rounded bg-light m-2 d-flex flex-column justify-content-center" id="${currentStaffId}">
             <h2 class="text-center mt-2"><span id="fname${currentStaffId}"> ${firstName}</span><span id="lname${currentStaffId}"> ${lastName} </span></h2>
-            <div class="d-flex flex-row m-2 text-center justify-content-center align-items-center">
+            <div class="d-flex flex-row m-1 text-center justify-content-center align-items-center">
                 <img class="m-2 rounded" src="https://i.pravatar.cc/100?img=${num2}">
                 <div class="m-2 cardText">
                     <h3 id="department${currentStaffId}">${department}</h3>
                     <p id="location${currentStaffId}">${staffLocation}</p>
                     <p id="jobTitle${currentStaffId}">${jobTitle}</p>
-                    <i class="fab fa-skype m-2" id="skype"></i>
+                    <a id="skypeIcon${currentStaffId}" href="tel:000000000"><i class="fab fa-skype m-2" id="skype"></i></a>
                     <a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
@@ -359,9 +385,11 @@ function createCards(resultArray) {
 }
 
 function createList(resultArray) {
+
     $('#cardSection').css({
         height: 0,
-        width: 0
+        width: 0,
+        display: 'none'        
     });
     $('#listSection').css({
         display: 'block',
@@ -379,13 +407,13 @@ function createList(resultArray) {
         staffLocation = resultArray[i].location;
         jobTitle = resultArray[i].jobTitle;
         email = resultArray[i].email;
-        $('#listDisplay').append(`<tr id="${currentStaffId}">
-            <td><span class="p-0" id="fname${currentStaffId}">${firstName}</span><span class="p-0" id="lname${currentStaffId}"> ${lastName}</span></td>
-            <td><a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a></td>
-            <td><p id="jobTitle${currentStaffId}">${jobTitle}</p></td>
-            <td><p id="location${currentStaffId}">${department}</p></td>
-            <td id="department${currentStaffId}">${staffLocation}</td>
-            <td><i data-bs-toggle="modal" data-bs-target="#addUpdateModal" class="fas fa-pen edit"></i> <i data-bs-toggle="modal" data-bs-target="#deleteModal" class="fas fa-trash-alt delete"></i></td>
+        $('#listDisplay').append(`<tr id="${currentStaffId}" class="staffRow">
+            <td class="text-center"><span class="p-0" id="fname${currentStaffId}">${firstName}</span><span class="p-0" id="lname${currentStaffId}"> ${lastName}</span></td>
+            <td class="text-center"><a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a></td>
+            <td class="text-center"><p id="jobTitle${currentStaffId}">${jobTitle}</p></td>
+            <td class="text-center"><p id="department${currentStaffId}">${department}</p></td>
+            <td class="text-center"><p id="location${currentStaffId}">${staffLocation}</p></td>
+            <td class="text-center"><a href="#" data-bs-toggle="modal" data-bs-target="#addUpdateModal"><i class="fas fa-pen edit"></i></a> <a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fas fa-trash-alt delete"></i></a></td>
         </tr>`);
 
         if (num2 >= 70) {
@@ -395,6 +423,7 @@ function createList(resultArray) {
     }
     $('#resultNum').text(resultArray.length);
     currentResults = resultArray;
+    reduceList();
 }
 
 //GENERAL FUNCTIONALITY
@@ -417,6 +446,19 @@ function displayResults(results) {
     } 
 }
 
+function modalTimeout() {
+    setTimeout(function() { 
+        $('#addUpdateModal').modal('hide');
+        $('#alert').fadeOut('fast');
+    }, 2500);
+}
+
+function alertTimeout() {
+    setTimeout(function() { 
+        $('#alert').fadeOut('fast');
+    }, 2500);
+}
+
 //PHP CALLS TO DATABASE
     //Create
     function addNewStaffMember(fname, lname, job, email, department) {
@@ -432,36 +474,27 @@ function displayResults(results) {
                 department: department
             },
             success: function(result) {
-            if (result.status.code == 200) {
-                $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
+                console.log(result);
+                if (result.status.code == 200) {
+                    $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
+                        ${fname} ${lname}, ${job} has been added to the database!
+                    </div>`);
+                    currentStaffId = result.data.id;
+                    modalTimeout();
 
-                    ${fname} ${lname}, ${job} has been added to the database!
-                </div>`);
-                currentStaffId = result.data.id;
-                setTimeout(function() { 
-                    $('#addUpdateModal').modal('hide');
-                    $('#alert').fadeOut('fast');
-                }, 1500);
-
-            }
-            else if (result.status.code == 400 || result.status.code == 300) {
-                $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
-                    ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
-                </div>`);
-                setTimeout(function() { 
-                    $('#addUpdateModal').modal('hide');
-                    $('#alert').fadeOut('fast');
-                }, 1500);
-            }
-            else if (result.status.code == 202) {
-                $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
-                    ${fname} ${lname}, ${job} already exists.
-                </div>`);
-                setTimeout(function() { 
-                    $('#addUpdateModal').modal('hide');
-                    $('#alert').fadeOut('fast');
-                }, 1500);
-            }
+                }
+                else if (result.status.code == 400 || result.status.code == 300) {
+                    $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
+                        ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
+                    </div>`);
+                    alertTimeout();
+                }
+                else if (result.status.code == 202) {
+                    $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
+                        ${fname} ${lname} already exists.
+                    </div>`);
+                    alertTimeout();
+                }
             },
         });
     }
@@ -496,33 +529,18 @@ function displayResults(results) {
                 id: id
             },
             success: function(result) {
+                console.log(result);
                 if (result.status.code == 200) {
                     $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
-                    setTimeout(function() { 
-                        $('#addUpdateModal').modal('hide');
-                        $('#alert').fadeOut('fast');
-                    }, 1500);
-
+                    modalTimeout();
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
                         ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
                     </div>`);
-                    setTimeout(function() { 
-                        $('#addUpdateModal').modal('hide');
-                        $('#alert').fadeOut('fast');
-                    }, 1500);
-                }
-                else if (result.status.code == 202) {
-                    $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
-                        ${fname} ${lname}, ${job} already exists.
-                    </div>`);
-                    setTimeout(function() { 
-                        $('#addUpdateModal').modal('hide');
-                        $('#alert').fadeOut('fast');
-                    }, 1500);
+                    alertTimeout();
                 }
             },
         });
@@ -539,18 +557,20 @@ function displayResults(results) {
             },
             success: function(result) {
                 if (result.status.code == 200) {
-                    $("#deleteModalBody").append(`<div class="alert alert-success" role="alert">
+                    $("#deleteModalBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         Staff member has been deleted.
                     </div>`);
                     setTimeout(function() { 
                         $('#deleteModal').modal('hide');
-                    }, 1500);
+                        $('#alert').fadeOut('fast');
+                    }, 2500);
 
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
-                    $("#deleteModal").append(`<div class="alert alert-danger" role="alert">
+                    $("#deleteModal").append(`<div class="alert alert-danger" id="alert" role="alert">
                         Staff member could not be deleted. Please try again later.
                     </div>`);
+                    alertTimeout();
                 }
             }
         });
