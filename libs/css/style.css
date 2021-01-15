@@ -178,11 +178,12 @@ button {
     top:0;
     left: 0;
     z-index: 1;
-    width: 300px;
+    width: 310px;
     height: 100vh;
     background: linear-gradient(90deg, rgba(34, 34, 34, 1), rgba(37, 37, 37, 1));
     border-radius: 0px 5px 5px 0px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #menuInner {
@@ -231,10 +232,9 @@ input {
 #email,
 #newDepartment,
 #newLocation,
-#departmentToChange,
 #updateDepartmentLocation,
-#departmentToDelete,
-#locationToDelete {
+.departmentDropdown,
+.locationDropdown {
     border: none;
     border-bottom: 1px solid black;
     border-radius: 0px;
