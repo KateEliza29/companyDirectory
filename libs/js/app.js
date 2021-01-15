@@ -16,8 +16,7 @@
 //GLOBAL VARIABLES
 let departmentFilterCriteria = [];
 let locationFilterCriteria = [];
-let departmentList = ["None", "Accounting", "Business Development", "Engineering", "Human Resources", "Legal", "Marketing", "Product Management", "Research and Development", "Sales", "Services", "Support", "Training"];
-let locationList = ["None", "Rome", "Paris", "Rome", "London", "London", "New York", "Paris", "Paris", "New York", "London", "Munich", "Munich"];
+let departmentList = {};
 let allResults;
 let currentSelection;
 let filterSearchResults = [];
@@ -38,6 +37,8 @@ let staffLocation;
 $('document').ready(function(){
     displayIcons();
     getAllDetails();
+    fillLocationDepartments([$('#departmentToChange'), $('#departmentToDelete'), $('#addUpdateDepartment')], 'departments');
+    fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete')], 'locations');
 });
 
 //Preloader
@@ -61,10 +62,10 @@ $(window).on('load', function () {
         currentSelection = allResults;
         isFiltered = false;
         if (isCards) {
-            createCards(currentSelection); //checked
+            createCards(currentSelection);
         }
         else {
-            createList(currentSelection); //checked
+            createList(currentSelection);
         }
         departmentFilterCriteria = [];
         locationFilterCriteria = [];
@@ -80,13 +81,13 @@ $(window).on('load', function () {
     $('#gridView').click(function() {
         isCards = true;
         $('#sortMenu div').show();
-        createCards(currentResults); //checked
+        createCards(currentResults);
     });
 
     $('#listView').click(function() {
         isCards = false;
         $('#sortMenu div').hide();
-        createList(currentResults); //checked
+        createList(currentResults);
     });
 
 
@@ -109,18 +110,17 @@ function displayIcons() {
 
 function reduceList() {
     if (window.innerWidth <= 750) {
-        $('td:nth-child(2),th:nth-child(2)').hide();
-        $('td:nth-child(6),th:nth-child(6)').hide();
+        $('#listDisplay td:nth-child(2),th:nth-child(2)').hide();
+        $('#listDisplay td:nth-child(6),th:nth-child(6)').hide();
     }
     else {
-        $('td:nth-child(2),th:nth-child(2)').show();
-        $('td:nth-child(6),th:nth-child(6)').show();
+        $('#listDisplay td:nth-child(2),th:nth-child(2)').show();
+        $('#listDisplay td:nth-child(6),th:nth-child(6)').show();
     }
 }
 
 //3- FILTER MENU
 $('td').click(function(e) {
-    //Add ticks
     addRemoveTicks(e);
     //Add criteria to location or department filter array.
     let filterKeyword = $(e.target).hasClass('departments') ? "department" : "location";
@@ -274,7 +274,7 @@ function searchDatabase(searchTerm, searchType) {
         isEdit = false;
         $('#addUpdateLabel').html("<i class='fas fa-user-plus m-2'></i> Add New Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-user-plus m-2'></i> Add");
-        let fields = [$('#firstName'), $('#lastName'), $('#email'), $('#jobTitle'), $('#location'), $('#department')];
+        let fields = [$('#firstName'), $('#lastName'), $('#email'), $('#jobTitle'), $('#location'), $('#addUpdateDepartment')];
         for (let i=0; i<fields.length; i++) {
             fields[i].val("");
         }
@@ -285,7 +285,7 @@ function searchDatabase(searchTerm, searchType) {
         lastName = $('#lastName').val().trim();
         jobTitle = $('#jobTitle').val().trim();
         email = $('#email').val().trim();
-        department = departmentList.indexOf($('#department').val()); 
+        department = departmentList.indexOf($('#addUpdateDepartment').val()); 
         if (firstName && lastName && jobTitle && email && department) {
             if (isEdit) {
                 editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
@@ -312,7 +312,6 @@ function searchDatabase(searchTerm, searchType) {
 
     //Edit modal contents
     function fillDetailsEditModal() {
-        console.log(currentStaffId);
         firstName = $(`#fname${currentStaffId}`).text(); 
         lastName = $(`#lname${currentStaffId}`).text(); 
         department = $(`#department${currentStaffId}`).text(); 
@@ -322,21 +321,22 @@ function searchDatabase(searchTerm, searchType) {
         email = emailpre.slice(7);
         $('#firstName').val(firstName);
         $('#lastName').val(lastName);
-        //$('#department').val(department);
-        $(`#department option[value="${department}"]`).attr('selected', 'selected');
-        $(`#location option[value="${staffLocation}"]`).attr('selected', 'selected');
+        $('#addUpdateDepartment').val(department);
+        $('#addUpdateLocation').val(staffLocation);
         $('#jobTitle').val(jobTitle);
         $('#email').val(email);
-        console.log("After = " + firstName, lastName, department, staffLocation, jobTitle);
+
     }
 
-    //Change location on selection of department
-    $('#department').change(function() {
-        console.log("change triggered");
-        department = $(`#department`).val();
-        let departmentIndex = departmentList.indexOf(department);
-        $('#location').val(locationList[departmentIndex]);
+        //Change location on selection of department
+    //Call to Department by ID. 
+    $('#addUpdateDepartment').change(function() {
+        department = $('#addUpdateDepartment').val();
+        let locationId = departmentList[department];
+        console.log(locationId);
+        changeLocationOnDepartmentChange(locationId);
     });
+
 
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
@@ -522,6 +522,50 @@ function alertTimeout() {
             },
         });
     }
+
+    function fillLocationDepartments(selectIds, keyword) {
+        let url = keyword == 'departments' ? "libs/php/getAllDepartments.php" : "libs/php/getAllLocations.php";
+        let tableId = keyword == 'departments' ? '#departmentTableBody' : '#locationTableBody';
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function(result) {
+                console.log(result);
+                for (let i=0; i<selectIds.length; i++) {
+                    $.each(result.data, function(index) {
+                        $(selectIds[i]).append($("<option>", {
+                            value: result.data[index].name,
+                            text: result.data[index].name
+                        })); 
+                    });
+                }
+                $.each(result.data, function(index) {
+                    $(tableId).append(`<tr><td class='filter text-nowrap ${keyword}'>${result.data[index].name}</td><td class='text-end right'></td></tr>`);
+                    if (keyword == 'departments') {
+                        departmentList[result.data[index].name] = result.data[index].locationID;
+                    }
+                }); 
+            }
+        });
+    }
+
+    function changeLocationOnDepartmentChange(id) {
+        department = $(`#addUpdateDepartment`).val();
+        $.ajax({
+            url: "libs/php/getLocationByID.php",
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                id: id
+            },
+            success: function(result) {
+                console.log(result);
+                $('#addUpdateLocation').val(result.data[0].name);
+            }
+        });
+    } 
+
 
     //Update
     function editStaffMember(fname, lname, job, email, department, id) {
