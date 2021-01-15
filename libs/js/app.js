@@ -40,7 +40,7 @@ $('document').ready(function(){
     displayIcons();
     getAllDetails();
     fillLocationDepartments([$('#departmentToChange'), $('#departmentToDelete'), $('#addUpdateDepartment')], 'departments');
-    fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete'), $('#addNewDepartmentLocation')], 'locations');
+    fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete'), $('#addNewDepartmentLocation'), $('#updateDepartmentLocation')], 'locations');
 });
 
 //Preloader
@@ -200,8 +200,8 @@ function filter() {
 //3- SORT MENU 
 $(document).on('click', '.sort', function(e){
     console.log("sort fired");
-    console.log(e);
     let criteria = $(e.target).text() == "Name" ? "lname" : $(e.target).text() == "Location" ? "location" : "department";
+    console.log(criteria);
     sortBy(criteria);
 });
 
@@ -359,9 +359,17 @@ function searchDatabase(searchTerm, searchType) {
     $('#deleteLocationBtn').click(function(e) {
         let locationId = locationList[$('#locationToDelete').val()]; 
         deleteLocationDepartmentStaff(e, locationId);
-        alert("You want to delete " + locationId);
         e.preventDefault();
-    })
+    });
+
+    $('#editDepartmentBtn').click(function(e) {
+        let locationId = locationList[$('#updateDepartmentLocation').val()]; 
+        let departmentId = departmentList[$('#departmentToChange').val()];
+        department = $('#departmentToChange').val();
+        staffLocation = $('#updateDepartmentLocation').val();
+        updateDepartment(departmentId, locationId);
+        e.preventDefault();
+    });
 
 
 
@@ -686,6 +694,36 @@ function alertTimeout() {
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
                         ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
+                    </div>`);
+                    alertTimeout();
+                }
+            },
+        });
+    }
+
+    function updateDepartment(departmentId, locationId) {
+        $.ajax({
+            url: "libs/php/updateDepartment.php",
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                locationId: locationId,
+                id: departmentId
+            },
+            success: function(result) {
+                console.log(result);
+                if (result.status.code == 200) {
+                    $("#updateDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
+                        ${department} is now located in ${staffLocation}!
+                    </div>`);
+                    modalTimeout($("#settingsModal"));
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
+                }
+                else if (result.status.code == 400 || result.status.code == 300) {
+                    $("#updateDepartment").append(`<div class="alert alert-danger" id="alert" role="alert">
+                        ${department} could not be changed. Please try again later.
                     </div>`);
                     alertTimeout();
                 }
