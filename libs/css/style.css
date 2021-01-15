@@ -224,17 +224,10 @@ input {
     font-family: 'Raleway', sans-serif;
 }
 
-#firstName, 
-#lastName,
-#location, 
-#department,
-#jobTitle, 
-#email,
-#newDepartment,
-#newLocation,
-#updateDepartmentLocation,
-.departmentDropdown,
-.locationDropdown {
+#addUpdateBody input,
+#addUpdateBody select,
+#settingsModalBody input,
+#settingsModalBody select {
     border: none;
     border-bottom: 1px solid black;
     border-radius: 0px;
