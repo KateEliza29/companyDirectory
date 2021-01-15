@@ -33,7 +33,7 @@
 
 	}	
 
-	$q = 'SELECT * from personnel where departmentID = ' . $_REQUEST['id'];
+	$q = 'SELECT * from department where locationID = ' . $_REQUEST['id'];
 	$result = $conn->query($q);
 
 	if(mysqli_num_rows($result) > 0)
@@ -44,7 +44,7 @@
 		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
 	}
 	else {
-		$query = 'DELETE FROM department WHERE id = ' . $_REQUEST['id'];
+		$query = 'DELETE FROM location WHERE id = ' . $_REQUEST['id'];
 
 		$result = $conn->query($query);
 		
