@@ -331,8 +331,8 @@ function searchDatabase(searchTerm, searchType) {
         $('#deleteLName').text($(`#lname${currentStaffId}`).text());
     });
 
-    $('#delete').click(function() {
-        deleteStaffMember(currentStaffId);
+    $('#deletePersonBtn').click(function(e) {
+        deleteLocationDepartmentStaff(e, currentStaffId);
     });
 
     //Settings Modal
@@ -350,6 +350,18 @@ function searchDatabase(searchTerm, searchType) {
         e.preventDefault();
     });
 
+    $('#deleteDepartmentBtn').click(function(e) {
+        let departmentId = departmentList[$('#departmentToDelete').val()]; 
+        deleteLocationDepartmentStaff(e, departmentId);
+        e.preventDefault();
+    });
+
+    $('#deleteLocationBtn').click(function(e) {
+        let locationId = locationList[$('#locationToDelete').val()]; 
+        deleteLocationDepartmentStaff(e, locationId);
+        alert("You want to delete " + locationId);
+        e.preventDefault();
+    })
 
 
 
@@ -470,9 +482,9 @@ function displayResults(results) {
     } 
 }
 
-function modalTimeout() {
+function modalTimeout(modal) {
     setTimeout(function() { 
-        $('#addUpdateModal').modal('hide');
+        modal.modal('hide');
         $('#alert').fadeOut('fast');
     }, 2500);
 }
@@ -504,20 +516,20 @@ function alertTimeout() {
                         ${fname} ${lname}, ${job} has been added to the database!
                     </div>`);
                     currentStaffId = result.data.id;
-                    modalTimeout();
+                    modalTimeout($("#addUpdateModal"));
 
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
                         ${fname} ${lname}, ${job} could not be added to the database. Please try again later.
                     </div>`);
-                    alertTimeout();
+                    alertTimeout($("#addUpdateModal"));
                 }
                 else if (result.status.code == 202) {
                     $("#addUpdateBody").append(`<div class="alert alert-warning" id="alert" role="alert">
                         ${fname} ${lname} already exists.
                     </div>`);
-                    alertTimeout();
+                    alertTimeout($("#addUpdateModal"));
                 }
             },
         });
@@ -538,7 +550,7 @@ function alertTimeout() {
                     $("#addNewDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${department} in ${staffLocation} has been added to the database!
                     </div>`);
-                    modalTimeout();
+                    modalTimeout($("#settingsModal"));
                     setTimeout(function() { 
                         location.reload();
                     }, 2000);
@@ -569,7 +581,7 @@ function alertTimeout() {
                     $("#addNewLocation").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${staffLocation} has been added to the database!
                     </div>`);
-                    modalTimeout();
+                    modalTimeout($("#settingsModal"));
                     setTimeout(function() { 
                         location.reload();
                     }, 2000);
@@ -669,7 +681,7 @@ function alertTimeout() {
                     $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
-                    modalTimeout();
+                    modalTimeout($("#addUpdateModal"));
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
@@ -682,31 +694,65 @@ function alertTimeout() {
     }
 
     //Delete
-    function deleteStaffMember(id) {
-        $.ajax({
-            url: "libs/php/deleteStaffMember.php",
+    function deleteLocationDepartmentStaff(e, id) {
+        let keyword;
+        let url;
+        let modal;
+        let needRefresh;
+        if ($(e.target).attr('id') == 'deleteDepartmentBtn') {
+            keyword = 'department';
+            url = 'libs/php/deleteDepartmentByID.php';
+            modal = $('#deleteDepartment');
+            needRefresh = true;
+        }
+        else if ($(e.target).attr('id') == 'deleteLocationBtn') {
+            keyword = 'location';
+            url = 'libs/php/deleteLocationByID.php';
+            modal = $('#deleteLocation');
+            needRefresh = true;
+        }
+        else if ($(e.target).attr('id') == 'deletePersonBtn') {
+            keyword = 'person';
+            url = 'libs/php/deleteStaffMember.php';
+            modal = $('#deleteModalBody');
+            needRefresh = false;
+        }
+        console.log(keyword, url, modal);
+       $.ajax({
+            url: url,
             type: 'POST',
             dataType: 'json',
             data: {
                 id: id 
             },
             success: function(result) {
+                console.log(result);
                 if (result.status.code == 200) {
-                    $("#deleteModalBody").append(`<div class="alert alert-success" id="alert" role="alert">
-                        Staff member has been deleted.
+                    modal.append(`<div class="alert alert-success" id="alert" role="alert">
+                        This ${keyword} has been deleted.
                     </div>`);
-                    setTimeout(function() { 
-                        $('#deleteModal').modal('hide');
-                    }, 2000);
                     alertTimeout();
-
+                    modalTimeout(modal.parent().parent().parent());
+                    if (needRefresh) {
+                        setTimeout(function() { 
+                            location.reload();
+                        }, 2000);
+                    }
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
-                    $("#deleteModal").append(`<div class="alert alert-danger" id="alert" role="alert">
-                        Staff member could not be deleted. Please try again later.
+                    modal.append(`<div class="alert alert-danger" id="alert" role="alert">
+                        There was an error. Please try again later.
                     </div>`);
                     alertTimeout();
                 }
+                else if (result.status.code == 202) {
+                    let type = keyword == 'department' ? 'staff members' : 'departments';
+                    modal.append(`<div class="alert alert-danger" id="alert" role="alert">
+                        There are ${type} assigned to this ${keyword}. Please ensure that there are no dependencies before deleting.
+                    </div>`);
+                    alertTimeout();
+                }
+
             }
-        });
-    }
+    });
+}
