@@ -1,19 +1,27 @@
 // Structure
-//1- DOM EVENTS
-    //1.1- Side menu
-    //1.2- Icons
-    //1.3- Filter menu
-    //1.4- Modals
-//2- RESPONSIVITY FUNCTIONS
-//3- FILTER MENU
-// SORT MENU
-// SEARCH FUNCTION
-//4- PHP CALLS TO DATABASE
-//5- MODAL FUNCTIONS
-//6- CARD FUNCTIONS
+//1- GLOBAL VARIABLES
+//2- DOM EVENTS
+    //2.1- Preloader
+    //2.2- Side Menu
+    //2.3- Top Menu
+//3- RESPONSIVITY FUNCTIONS
+//4- FILTER MENU
+//5- SORT MENU
+//6- SEARCH FUNCTION
+//7- MODAL FUNCTIONS
+    //7.1- Add/Edit Modal
+    //7.2- Delete Modal
+    //7.3- Settings Modal
+//8- DATA DISPLAY
+//9- GENERAL FUNCTIONALITY
+//10- PHP CALLS TO DATABASE
+    //10.1- Create
+    //10.2- Read
+    //10.3- Update
+    //10.4- Delete
 
 
-//GLOBAL VARIABLES
+//1- GLOBAL VARIABLES
 let departmentFilterCriteria = [];
 let locationFilterCriteria = [];
 let departmentList = {};
@@ -35,7 +43,7 @@ let email;
 let department;
 let staffLocation;
 
-//1- DOM EVENTS
+//2- DOM EVENTS
 $('document').ready(function(){
     displayIcons();
     getAllDetails();
@@ -43,15 +51,15 @@ $('document').ready(function(){
     fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete'), $('#addNewDepartmentLocation'), $('#updateDepartmentLocation')], 'locations');
 });
 
-//Preloader
-$(window).on('load', function () {    
-    if ($('#preloader').length) {
-        $('#preloader').delay(100).fadeOut('slow', function () {
-            $(this).remove();
-        });
-    }});
+    //2.1- Preloader
+    $(window).on('load', function () {    
+        if ($('#preloader').length) {
+            $('#preloader').delay(100).fadeOut('slow', function () {
+                $(this).remove();
+            });
+        }});
 
-    //1.1- Side menu
+    //2.2- Side Menu
     $('#menu').click(function() {
         $('#sideMenu').toggle();
     });
@@ -79,7 +87,7 @@ $(window).on('load', function () {
         }
     });
 
-    //1.2 Top Menu
+    //2.3 Top Menu
     $('#gridView').click(function() {
         isCards = true;
         $('#sortMenu div').show();
@@ -93,7 +101,7 @@ $(window).on('load', function () {
     });
 
 
-//2- RESPONSIVITY FUNCTIONS
+//3- RESPONSIVITY FUNCTIONS
 $(window).resize(function() {
     displayIcons();
     reduceList();
@@ -121,7 +129,7 @@ function reduceList() {
     }
 }
 
-//3- FILTER MENU
+//4- FILTER MENU
 $('.tableBody').on('click', 'td', function(e) {
     addRemoveTicks(e);
     //Add criteria to location or department filter array.
@@ -197,11 +205,9 @@ function filter() {
 
 }
 
-//3- SORT MENU 
+//5- SORT MENU 
 $(document).on('click', '.sort', function(e){
-    console.log("sort fired");
     let criteria = $(e.target).text() == "Name" ? "lastName" : $(e.target).text() == "Location" ? "location" : "department";
-    console.log(criteria);
     sortBy(criteria);
 });
 
@@ -233,7 +239,7 @@ function sortBy(criteria) {
     }
 }
 
-//SEARCH FUNCTION
+//6- SEARCH FUNCTION
 $('#searchType').keyup(function(e) {
     let searchType = $('#searchSelect').val() == "firstNameSearch" ? "p.firstName" : $('#searchSelect').val() == "lastNameSearch" ? "p.lastName" : "p.jobTitle";
     let searchTerm = ($('#searchType').val());
@@ -261,8 +267,8 @@ function searchDatabase(searchTerm, searchType) {
     });
 }
 
-//5- MODAL FUNCTIONS
-    //AddUpdate Modal
+//7- MODAL FUNCTIONS
+    //7.1 Add/Update Modal
     $(document).on('click', '.edit', function(e){
         isEdit = true;
         currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id')
@@ -324,7 +330,7 @@ function searchDatabase(searchTerm, searchType) {
         changeLocationOnDepartmentChange(locationId);
     });
 
-    //Delete Modal
+    //7.2- Delete Modal
     $(document).on('click', '.delete', function(e){
         currentStaffId = $(e.target).parent().parent().attr('id');
         $('#deleteFName').text($(`#fname${currentStaffId}`).text());
@@ -335,7 +341,7 @@ function searchDatabase(searchTerm, searchType) {
         deleteLocationDepartmentStaff(e, currentStaffId);
     });
 
-    //Settings Modal
+    //7.3- Settings Modal
     $('#addDepartment').click(function(e) {
         department = $('#newDepartment').val();
         staffLocation = $('#addNewDepartmentLocation').val();
@@ -381,7 +387,7 @@ function searchDatabase(searchTerm, searchType) {
     });*/
 
 
-//Data Display
+//8- DATA DISPLAY
 function createCards(resultArray) {
     $('#listSection').css({
         height: 0,
@@ -471,8 +477,8 @@ function createList(resultArray) {
     reduceList();
 }
 
-//GENERAL FUNCTIONALITY
-function refreshCurrentSelection() {
+//9- GENERAL FUNCTIONALITY
+/*function refreshCurrentSelection() {
     //Get new results. 
     allResults = getAllDetails();
     //Run the result through the filter system. 
@@ -480,7 +486,7 @@ function refreshCurrentSelection() {
     //Save this new array as the currentSelection. 
     //Create new cards. 
     //displayResults(currentSelection)
-}
+}*/
 
 function displayResults(results) {
     if (isCards) {
@@ -504,8 +510,8 @@ function alertTimeout() {
     }, 2500);
 }
 
-//PHP CALLS TO DATABASE
-    //Create
+//10- PHP CALLS TO DATABASE
+    //10.1- Create
     function addNewStaffMember(fname, lname, job, email, department) {
         $.ajax({
             url: "libs/php/addNewStaffMember.php",
@@ -519,7 +525,6 @@ function alertTimeout() {
                 department: department
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${fname} ${lname}, ${job} has been added to the database!
@@ -554,7 +559,6 @@ function alertTimeout() {
                 locationID: locationid,
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#addNewDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${department} in ${staffLocation} has been added to the database!
@@ -585,7 +589,6 @@ function alertTimeout() {
                 name: name, 
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#addNewLocation").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${staffLocation} has been added to the database!
@@ -606,14 +609,13 @@ function alertTimeout() {
         });
     }
 
-    //Read 
+    //10.2- Read 
     function getAllDetails() {
         $.ajax({
             url: "libs/php/getAll.php",
             type: 'GET',
             dataType: 'json',
             success: function(result) {
-            console.log(result);
                 allResults = result.data;
                 currentSelection = result.data;
                 displayResults(currentSelection);
@@ -629,7 +631,6 @@ function alertTimeout() {
             type: 'GET',
             dataType: 'json',
             success: function(result) {
-                console.log(result);
                 for (let i=0; i<selectIds.length; i++) {
                     $.each(result.data, function(index) {
                         $(selectIds[i]).append($("<option>", {
@@ -663,14 +664,13 @@ function alertTimeout() {
                 id: id
             },
             success: function(result) {
-                console.log(result);
                 $('#addUpdateLocation').val(result.data[0].name);
             }
         });
     } 
 
 
-    //Update
+    //10.3- Update
     function editStaffMember(fname, lname, job, email, department, id) {
         $.ajax({
             url: "libs/php/updateStaffMember.php",
@@ -685,7 +685,6 @@ function alertTimeout() {
                 id: id
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#addUpdateBody").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${fname} ${lname}, ${job} has been updated!
@@ -712,7 +711,6 @@ function alertTimeout() {
                 id: departmentId
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     $("#updateDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${department} is now located in ${staffLocation}!
@@ -732,7 +730,7 @@ function alertTimeout() {
         });
     }
 
-    //Delete
+    //10.4- Delete
     function deleteLocationDepartmentStaff(e, id) {
         let keyword;
         let url;
@@ -756,7 +754,6 @@ function alertTimeout() {
             modal = $('#deleteModalBody');
             needRefresh = false;
         }
-        console.log(keyword, url, modal);
        $.ajax({
             url: url,
             type: 'POST',
@@ -765,7 +762,6 @@ function alertTimeout() {
                 id: id 
             },
             success: function(result) {
-                console.log(result);
                 if (result.status.code == 200) {
                     modal.append(`<div class="alert alert-success" id="alert" role="alert">
                         This ${keyword} has been deleted.
