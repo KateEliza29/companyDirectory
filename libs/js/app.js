@@ -337,13 +337,21 @@ function searchDatabase(searchTerm, searchType) {
 
     //Settings Modal
     $('#addDepartment').click(function(e) {
-        department = $('#newDepartment').val()
+        department = $('#newDepartment').val();
         staffLocation = $('#addNewDepartmentLocation').val();
         let locationId = locationList[$('#addNewDepartmentLocation').val()];
-        console.log(locationId);
         addNewDepartment(department, locationId);
         e.preventDefault();
     });
+
+    $('#addLocation').click(function(e) {
+        staffLocation = $('#newLocation').val();
+        addNewLocation(staffLocation);
+        e.preventDefault();
+    });
+
+
+
 
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
@@ -530,16 +538,46 @@ function alertTimeout() {
                     $("#addNewDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
                         ${department} in ${staffLocation} has been added to the database!
                     </div>`);
-                    currentStaffId = result.data.id;
                     modalTimeout();
                     setTimeout(function() { 
                         location.reload();
-                    }, 2500);
+                    }, 2000);
 
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addNewDepartment").append(`<div class="alert alert-danger" id="alert" role="alert">
                         ${department} in ${staffLocation} could not be added to the database. Please try again later.
+                    </div>`);
+                    alertTimeout();
+                }
+            },
+        });
+    }
+
+    //COMBINE THIS WITH ADD NEW DEPARTMENT?
+    function addNewLocation(name) {
+        $.ajax({
+            url: "libs/php/insertLocation.php",
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                name: name, 
+            },
+            success: function(result) {
+                console.log(result);
+                if (result.status.code == 200) {
+                    $("#addNewLocation").append(`<div class="alert alert-success" id="alert" role="alert">
+                        ${staffLocation} has been added to the database!
+                    </div>`);
+                    modalTimeout();
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
+
+                }
+                else if (result.status.code == 400 || result.status.code == 300) {
+                    $("#addNewDepartment").append(`<div class="alert alert-danger" id="alert" role="alert">
+                        ${staffLocation} could not be added to the database. Please try again later.
                     </div>`);
                     alertTimeout();
                 }
@@ -659,8 +697,8 @@ function alertTimeout() {
                     </div>`);
                     setTimeout(function() { 
                         $('#deleteModal').modal('hide');
-                        $('#alert').fadeOut('fast');
-                    }, 2500);
+                    }, 2000);
+                    alertTimeout();
 
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
