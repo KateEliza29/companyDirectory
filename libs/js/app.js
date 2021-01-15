@@ -200,7 +200,7 @@ function filter() {
 //3- SORT MENU 
 $(document).on('click', '.sort', function(e){
     console.log("sort fired");
-    let criteria = $(e.target).text() == "Name" ? "lname" : $(e.target).text() == "Location" ? "location" : "department";
+    let criteria = $(e.target).text() == "Name" ? "lastName" : $(e.target).text() == "Location" ? "location" : "department";
     console.log(criteria);
     sortBy(criteria);
 });
@@ -210,25 +210,25 @@ function sortBy(criteria) {
     if (isFiltered) {
         if (isAZ) {
             filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-            isAZ = false;
             displayResults(filterSearchResults);
+            isAZ = false;
         }
         else {
             filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-            isAZ = true;
             displayResults(filterSearchResults);
+            isAZ = true;
         }
     }
     else {
         if (isAZ) {
             currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
-            isAZ = false;
             displayResults(currentSelection);
+            isAZ = false;
         }
         else {
             currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
-            isAZ = true;
             displayResults(currentSelection);
+            isAZ = true;
         }
     }
 }
@@ -341,7 +341,7 @@ function searchDatabase(searchTerm, searchType) {
         staffLocation = $('#addNewDepartmentLocation').val();
         let locationId = locationList[$('#addNewDepartmentLocation').val()];
         addNewDepartment(department, locationId);
-        e.preventDefault();
+
     });
 
     $('#addLocation').click(function(e) {
@@ -389,6 +389,7 @@ function createCards(resultArray) {
         display: 'none'
     });
     $('#cardSection').css({
+        display: 'block',
         height: '70vh',
         width: '100%'
     });
