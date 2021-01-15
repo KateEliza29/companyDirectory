@@ -345,9 +345,6 @@ function searchDatabase(searchTerm, searchType) {
         e.preventDefault();
     });
 
-
-
-
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
         currentStaffId = $(e.target).attr('id').slice(-2);
