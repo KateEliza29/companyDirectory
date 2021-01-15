@@ -17,6 +17,8 @@
 let departmentFilterCriteria = [];
 let locationFilterCriteria = [];
 let departmentList = {};
+let locationList = {};
+let departmentToLocation = {};
 let allResults;
 let currentSelection;
 let filterSearchResults = [];
@@ -38,7 +40,7 @@ $('document').ready(function(){
     displayIcons();
     getAllDetails();
     fillLocationDepartments([$('#departmentToChange'), $('#departmentToDelete'), $('#addUpdateDepartment')], 'departments');
-    fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete')], 'locations');
+    fillLocationDepartments([$('#addUpdateLocation'), $('#locationToDelete'), $('#addNewDepartmentLocation')], 'locations');
 });
 
 //Preloader
@@ -120,7 +122,7 @@ function reduceList() {
 }
 
 //3- FILTER MENU
-$('td').click(function(e) {
+$('.tableBody').on('click', 'td', function(e) {
     addRemoveTicks(e);
     //Add criteria to location or department filter array.
     let filterKeyword = $(e.target).hasClass('departments') ? "department" : "location";
@@ -260,7 +262,7 @@ function searchDatabase(searchTerm, searchType) {
 }
 
 //5- MODAL FUNCTIONS
-    //Edit and New Buttons
+    //AddUpdate Modal
     $(document).on('click', '.edit', function(e){
         isEdit = true;
         currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id')
@@ -284,8 +286,8 @@ function searchDatabase(searchTerm, searchType) {
         firstName = $('#firstName').val().trim();
         lastName = $('#lastName').val().trim();
         jobTitle = $('#jobTitle').val().trim();
-        email = $('#email').val().trim();
-        department = departmentList.indexOf($('#addUpdateDepartment').val()); 
+        email = $('#email').val().trim(); 
+        department = departmentList[$('#addUpdateDepartment').val()]; //ISSUEE HERE
         if (firstName && lastName && jobTitle && email && department) {
             if (isEdit) {
                 editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
@@ -299,18 +301,6 @@ function searchDatabase(searchTerm, searchType) {
         e.preventDefault();
     });
 
-    //Delete buttons
-    $(document).on('click', '.delete', function(e){
-        currentStaffId = $(e.target).parent().parent().attr('id');
-        $('#deleteFName').text($(`#fname${currentStaffId}`).text());
-        $('#deleteLName').text($(`#lname${currentStaffId}`).text());
-    });
-
-    $('#delete').click(function() {
-        deleteStaffMember(currentStaffId);
-    });
-
-    //Edit modal contents
     function fillDetailsEditModal() {
         firstName = $(`#fname${currentStaffId}`).text(); 
         lastName = $(`#lname${currentStaffId}`).text(); 
@@ -325,18 +315,35 @@ function searchDatabase(searchTerm, searchType) {
         $('#addUpdateLocation').val(staffLocation);
         $('#jobTitle').val(jobTitle);
         $('#email').val(email);
-
     }
 
-        //Change location on selection of department
-    //Call to Department by ID. 
+    //Change location on selection of department
     $('#addUpdateDepartment').change(function() {
         department = $('#addUpdateDepartment').val();
-        let locationId = departmentList[department];
-        console.log(locationId);
+        let locationId = departmentToLocation[department];
         changeLocationOnDepartmentChange(locationId);
     });
 
+    //Delete Modal
+    $(document).on('click', '.delete', function(e){
+        currentStaffId = $(e.target).parent().parent().attr('id');
+        $('#deleteFName').text($(`#fname${currentStaffId}`).text());
+        $('#deleteLName').text($(`#lname${currentStaffId}`).text());
+    });
+
+    $('#delete').click(function() {
+        deleteStaffMember(currentStaffId);
+    });
+
+    //Settings Modal
+    $('#addDepartment').click(function(e) {
+        department = $('#newDepartment').val()
+        staffLocation = $('#addNewDepartmentLocation').val();
+        let locationId = locationList[$('#addNewDepartmentLocation').val()];
+        console.log(locationId);
+        addNewDepartment(department, locationId);
+        e.preventDefault();
+    });
 
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
@@ -508,6 +515,38 @@ function alertTimeout() {
         });
     }
 
+    function addNewDepartment(name, locationid) {
+        $.ajax({
+            url: "libs/php/insertDepartment.php",
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                name: name, 
+                locationID: locationid,
+            },
+            success: function(result) {
+                console.log(result);
+                if (result.status.code == 200) {
+                    $("#addNewDepartment").append(`<div class="alert alert-success" id="alert" role="alert">
+                        ${department} in ${staffLocation} has been added to the database!
+                    </div>`);
+                    currentStaffId = result.data.id;
+                    modalTimeout();
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2500);
+
+                }
+                else if (result.status.code == 400 || result.status.code == 300) {
+                    $("#addNewDepartment").append(`<div class="alert alert-danger" id="alert" role="alert">
+                        ${department} in ${staffLocation} could not be added to the database. Please try again later.
+                    </div>`);
+                    alertTimeout();
+                }
+            },
+        });
+    }
+
     //Read 
     function getAllDetails() {
         $.ajax({
@@ -543,7 +582,12 @@ function alertTimeout() {
                 $.each(result.data, function(index) {
                     $(tableId).append(`<tr><td class='filter text-nowrap ${keyword}'>${result.data[index].name}</td><td class='text-end right'></td></tr>`);
                     if (keyword == 'departments') {
-                        departmentList[result.data[index].name] = result.data[index].locationID;
+                        departmentList [result.data[index].name] = result.data[index].id;
+                        departmentToLocation[result.data[index].name] = result.data[index].locationID;
+                    }
+                    if (keyword == 'locations') {
+                        //create object of location and ids.
+                        locationList [result.data[index].name] = result.data[index].id;
                     }
                 }); 
             }
