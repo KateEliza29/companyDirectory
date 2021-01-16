@@ -70,22 +70,7 @@ $('document').ready(function(){
     });
 
     $('#reset').click(function() {
-        currentSelection = allResults;
-        isFiltered = false;
-        if (isCards) {
-            createCards(currentSelection);
-        }
-        else {
-            createList(currentSelection);
-        }
-        departmentFilterCriteria = [];
-        locationFilterCriteria = [];
-        let cells = $('#menuInner td');
-        for (let i=0; i<cells.length; i++) {
-            if ($(cells[i]).html() == '<i class="far fa-check-circle"></i>') {
-                $(cells[i]).html("");
-            }
-        }
+        resetFilters();
     });
 
     //2.3 Top Menu
@@ -189,8 +174,9 @@ function filter() {
         filterSearchResults = currentSelection.filter(staff => locationFilterCriteria.includes(staff.location)); 
     }
     if (filterSearchResults.length == 0 && departmentFilterCriteria.length > 0 || locationFilterCriteria.length > 0) {
-        displayResults(filterSearchResults);
         isFiltered = true;
+        displayResults(filterSearchResults);
+
     }
     else if (filterSearchResults.length == 0 && departmentFilterCriteria.length == 0 && locationFilterCriteria.length == 0) {
         displayResults(currentSelection);
@@ -199,10 +185,9 @@ function filter() {
         isFiltered = false;
     }
     else {
-        displayResults(filterSearchResults);
         isFiltered = true;
+        displayResults(filterSearchResults);
     }
-
 }
 
 //5- SORT MENU 
@@ -212,7 +197,7 @@ $(document).on('click', '.sort', function(e){
 });
 
 
-function sortBy(criteria) {
+function sortBy(criteria) {//Add 'isSearch' to make sure it sorts by the search results. ALSO does not sort by filtered selection. 
     if (isFiltered) {
         if (isAZ) {
             filterSearchResults.sort((a, b) => (a[criteria].toLowerCase() > b[criteria].toLowerCase()) ? 1 : -1);
@@ -240,7 +225,8 @@ function sortBy(criteria) {
 }
 
 //6- SEARCH FUNCTION
-$('#searchType').keyup(function(e) {
+$('#searchType').keyup(function() {
+    resetFilters;
     let searchType = $('#searchSelect').val() == "firstNameSearch" ? "p.firstName" : $('#searchSelect').val() == "lastNameSearch" ? "p.lastName" : "p.jobTitle";
     let searchTerm = ($('#searchType').val());
     searchDatabase(searchTerm, searchType);
@@ -273,7 +259,6 @@ function searchDatabase(searchTerm, searchType) {
         $('#cardModal').modal('hide');
         isEdit = true;
         currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id');
-        console.log("on edit fire, currentStaffId = " + currentStaffId);
         fillDetailsEditModal();
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
@@ -313,7 +298,6 @@ function searchDatabase(searchTerm, searchType) {
     });
 
     function fillDetailsEditModal() {
-        console.log("on fill details call, currentStaffId = " + currentStaffId);
         firstName = $(`#fname${currentStaffId}`).text(); 
         lastName = $(`#lname${currentStaffId}`).text(); 
         department = $(`#department${currentStaffId}`).text(); 
@@ -406,10 +390,13 @@ function searchDatabase(searchTerm, searchType) {
 
     //Show card on table click.
     $('#listBody').on('click', 'td', function(e) { //Change this to target everything but the edit box.
+        //Select the last two characters of the id. This should correspond to the staff member's database id. 
         currentStaffId = $(e.target).attr('id').slice(-2);
-        console.log("on list body click, currentStaffId = " + currentStaffId);
+        //If it can be converted to a number, the id is fine. If it can't, it's below 10 and needs the first character taking off. 
+        if (!parseInt(currentStaffId)) {
+            currentStaffId = currentStaffId.slice(-1);
+        }
         $('#cardModal').modal('show');
-        console.log(allResults); //find that id first, not the index. 
         let person =[];
         for (let i=0; i<currentSelection.length; i++) {
             if (currentSelection[i].id == currentStaffId) {
@@ -560,6 +547,26 @@ function alertInvalidEntry(modal) {
         Please make sure all fields are correctly filled in and try again.
     </div>`);
     alertTimeout();
+}
+
+function resetFilters() {
+    currentSelection = allResults;
+    isFiltered = false;
+    if (isCards) {
+        createCards(currentSelection);
+    }
+    else {
+        createList(currentSelection);
+    }
+    departmentFilterCriteria = [];
+    locationFilterCriteria = [];
+    $('#searchType').val("");
+    let cells = $('#menuInner td');
+    for (let i=0; i<cells.length; i++) {
+        if ($(cells[i]).html() == '<i class="far fa-check-circle"></i>') {
+            $(cells[i]).html("");
+        }
+    }
 }
 
 //10- PHP CALLS TO DATABASE
@@ -797,19 +804,16 @@ function alertInvalidEntry(modal) {
             keyword = 'department';
             url = 'libs/php/deleteDepartmentByID.php';
             modal = $('#deleteDepartment');
-            needRefresh = true;
         }
         else if ($(e.target).attr('id') == 'deleteLocationBtn') {
             keyword = 'location';
             url = 'libs/php/deleteLocationByID.php';
             modal = $('#deleteLocation');
-            needRefresh = true;
         }
         else if ($(e.target).attr('id') == 'deletePersonBtn') {
             keyword = 'person';
             url = 'libs/php/deleteStaffMember.php';
-            modal = $('#deleteModalBody');
-            needRefresh = false;
+            modal = $('#deleteModalBody');;
         }
        $.ajax({
             url: url,
@@ -825,11 +829,9 @@ function alertInvalidEntry(modal) {
                     </div>`);
                     alertTimeout();
                     modalTimeout(modal.parent().parent().parent());
-                    if (needRefresh) {
-                        setTimeout(function() { 
-                            location.reload();
-                        }, 2000);
-                    }
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     modal.append(`<div class="alert alert-danger" id="alert" role="alert">
