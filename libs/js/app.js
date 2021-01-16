@@ -35,6 +35,7 @@ let isEdit;
 let isCards = true;
 let isAZ = true;
 let isFiltered = false;
+let emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 let firstName;
 let lastName;
@@ -215,24 +216,24 @@ $(document).on('click', '.sort', function(e){
 function sortBy(criteria) {
     if (isFiltered) {
         if (isAZ) {
-            filterSearchResults.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            filterSearchResults.sort((a, b) => (a[criteria].toLowerCase() > b[criteria].toLowerCase()) ? 1 : -1);
             displayResults(filterSearchResults);
             isAZ = false;
         }
         else {
-            filterSearchResults.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            filterSearchResults.sort((a, b) => (b[criteria].toLowerCase() > a[criteria].toLowerCase()) ? 1 : -1);
             displayResults(filterSearchResults);
             isAZ = true;
         }
     }
     else {
         if (isAZ) {
-            currentSelection.sort((a, b) => (a[criteria] > b[criteria]) ? 1 : -1);
+            currentSelection.sort((a, b) => (a[criteria].toLowerCase() > b[criteria].toLowerCase()) ? 1 : -1);
             displayResults(currentSelection);
             isAZ = false;
         }
         else {
-            currentSelection.sort((a, b) => (b[criteria] > a[criteria]) ? 1 : -1);
+            currentSelection.sort((a, b) => (b[criteria].toLowerCase() > a[criteria].toLowerCase()) ? 1 : -1);
             displayResults(currentSelection);
             isAZ = true;
         }
@@ -293,8 +294,9 @@ function searchDatabase(searchTerm, searchType) {
         lastName = $('#lastName').val().trim();
         jobTitle = $('#jobTitle').val().trim();
         email = $('#email').val().trim(); 
-        department = departmentList[$('#addUpdateDepartment').val()]; //ISSUEE HERE
-        if (firstName && lastName && jobTitle && email && department) {
+        department = departmentList[$('#addUpdateDepartment').val()];
+        let validEmail = emailRegex.test(email);
+        if (firstName && lastName && jobTitle && validEmail && department) {
             if (isEdit) {
                 editStaffMember(firstName, lastName, jobTitle, email, department, currentStaffId);
                 //Refresh with new current selection
@@ -304,7 +306,9 @@ function searchDatabase(searchTerm, searchType) {
                 //Refresh with new current selection
             }
         }
-        e.preventDefault();
+        else {
+            alertInvalidEntry($('#addUpdateBody'));
+        }
     });
 
     function fillDetailsEditModal() {
@@ -326,8 +330,8 @@ function searchDatabase(searchTerm, searchType) {
     //Change location on selection of department
     $('#addUpdateDepartment').change(function() {
         department = $('#addUpdateDepartment').val();
-        let locationId = departmentToLocation[department];
-        changeLocationOnDepartmentChange(locationId);
+            let locationId = departmentToLocation[department];
+            changeLocationOnDepartmentChange(locationId);
     });
 
     //7.2- Delete Modal
@@ -346,26 +350,43 @@ function searchDatabase(searchTerm, searchType) {
         department = $('#newDepartment').val();
         staffLocation = $('#addNewDepartmentLocation').val();
         let locationId = locationList[$('#addNewDepartmentLocation').val()];
-        addNewDepartment(department, locationId);
-
+        if (department && locationId) {
+            addNewDepartment(department, locationId);
+        } 
+        else {
+            alertInvalidEntry($('#addNewDepartment'));
+        }
     });
 
     $('#addLocation').click(function(e) {
         staffLocation = $('#newLocation').val();
-        addNewLocation(staffLocation);
-        e.preventDefault();
+        if (staffLocation) {
+            addNewLocation(staffLocation);
+        }
+        else {
+            alertInvalidEntry($('#addNewLocation'));
+        }
     });
 
     $('#deleteDepartmentBtn').click(function(e) {
         let departmentId = departmentList[$('#departmentToDelete').val()]; 
-        deleteLocationDepartmentStaff(e, departmentId);
-        e.preventDefault();
+        if (departmentId) {
+            deleteLocationDepartmentStaff(e, departmentId);
+        }
+        else {
+            alertInvalidEntry($('#deleteDepartment'));
+        }
     });
 
     $('#deleteLocationBtn').click(function(e) {
         let locationId = locationList[$('#locationToDelete').val()]; 
-        deleteLocationDepartmentStaff(e, locationId);
-        e.preventDefault();
+        if (locationId) {
+            deleteLocationDepartmentStaff(e, locationId);
+        }
+        else {
+            alertInvalidEntry($('#deleteLocation'));
+        }
+        
     });
 
     $('#editDepartmentBtn').click(function(e) {
@@ -373,11 +394,13 @@ function searchDatabase(searchTerm, searchType) {
         let departmentId = departmentList[$('#departmentToChange').val()];
         department = $('#departmentToChange').val();
         staffLocation = $('#updateDepartmentLocation').val();
-        updateDepartment(departmentId, locationId);
-        e.preventDefault();
+        if (department && locationId) {
+            updateDepartment(departmentId, locationId);
+        }
+        else {
+            alertInvalidEntry($('#updateDepartment'));
+        }
     });
-
-
 
     /*Card Pop Up
     $(document).on('click', '.staffRow', function(e){
@@ -510,6 +533,13 @@ function alertTimeout() {
     }, 2500);
 }
 
+function alertInvalidEntry(modal) {
+    modal.append(`<div class="alert alert-warning" id="alert" role="alert">
+        Please make sure all fields are correctly filled in and try again.
+    </div>`);
+    alertTimeout();
+}
+
 //10- PHP CALLS TO DATABASE
     //10.1- Create
     function addNewStaffMember(fname, lname, job, email, department) {
@@ -531,7 +561,9 @@ function alertTimeout() {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout($("#addUpdateModal"));
-
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
@@ -690,6 +722,9 @@ function alertTimeout() {
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
                     modalTimeout($("#addUpdateModal"));
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
