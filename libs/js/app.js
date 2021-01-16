@@ -561,7 +561,9 @@ function alertInvalidEntry(modal) {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout($("#addUpdateModal"));
-
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
@@ -720,6 +722,9 @@ function alertInvalidEntry(modal) {
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
                     modalTimeout($("#addUpdateModal"));
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
