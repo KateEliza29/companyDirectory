@@ -122,11 +122,11 @@ function displayIcons() {
 function reduceList() {
     if (window.innerWidth <= 750) {
         $('#listDisplay td:nth-child(2),th:nth-child(2)').hide();
-        $('#listDisplay td:nth-child(6),th:nth-child(6)').hide();
+        $('#listDisplay td:nth-child(3),th:nth-child(3)').hide();
     }
     else {
         $('#listDisplay td:nth-child(2),th:nth-child(2)').show();
-        $('#listDisplay td:nth-child(6),th:nth-child(6)').show();
+        $('#listDisplay td:nth-child(3),th:nth-child(3)').show();
     }
 }
 
@@ -139,7 +139,6 @@ $('.tableBody').on('click', 'td', function(e) {
     addToFilterArray(e.target, filterKeyword);
     //Filter current selection based on which selections have been made. 
     filter();
-
 });
 
 function addRemoveTicks(e) {
@@ -271,8 +270,10 @@ function searchDatabase(searchTerm, searchType) {
 //7- MODAL FUNCTIONS
     //7.1 Add/Update Modal
     $(document).on('click', '.edit', function(e){
+        $('#cardModal').modal('hide');
         isEdit = true;
-        currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id')
+        currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id');
+        console.log("on edit fire, currentStaffId = " + currentStaffId);
         fillDetailsEditModal();
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
         $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
@@ -312,6 +313,7 @@ function searchDatabase(searchTerm, searchType) {
     });
 
     function fillDetailsEditModal() {
+        console.log("on fill details call, currentStaffId = " + currentStaffId);
         firstName = $(`#fname${currentStaffId}`).text(); 
         lastName = $(`#lname${currentStaffId}`).text(); 
         department = $(`#department${currentStaffId}`).text(); 
@@ -402,13 +404,43 @@ function searchDatabase(searchTerm, searchType) {
         }
     });
 
-    /*Card Pop Up
-    $(document).on('click', '.staffRow', function(e){
+    //Show card on table click.
+    $('#listBody').on('click', 'td', function(e) { //Change this to target everything but the edit box.
         currentStaffId = $(e.target).attr('id').slice(-2);
-        console.log(currentStaffId);
+        console.log("on list body click, currentStaffId = " + currentStaffId);
         $('#cardModal').modal('show');
-    });*/
+        console.log(allResults); //find that id first, not the index. 
+        let person =[];
+        for (let i=0; i<currentSelection.length; i++) {
+            if (currentSelection[i].id == currentStaffId) {
+                person.push(currentSelection[i]);
+            }
+        } 
+        firstName = person[0].firstName;
+        lastName = person[0].lastName;
+        department = person[0].department;
+        staffLocation = person[0].location;
+        jobTitle = person[0].jobTitle;
+        email = person[0].email;
+        $("#cardModalContent").append(`<section class="cardPopup rounded bg-light mx-auto my-2 d-flex flex-column justify-content-center" id="${currentStaffId}">
+            <h2 class="text-center mt-2"><span id="fname${currentStaffId}"> ${firstName}</span><span id="lname${currentStaffId}"> ${lastName} </span></h2>
+            <div class="d-flex flex-row m-1 text-center justify-content-center align-items-center">
+                <img class="m-2 rounded" src="https://i.pravatar.cc/100?img=${currentStaffId}">
+                <div class="m-2 cardText">
+                    <h3 id="department${currentStaffId}">${department}</h3>
+                    <p id="location${currentStaffId}">${staffLocation}</p>
+                    <p id="jobTitle${currentStaffId}">${jobTitle}</p>
+                    <a id="skypeIcon${currentStaffId}" href="tel:000000000"><i class="fab fa-skype m-2" id="skype"></i></a>
+                    <a id="emailIcon${currentStaffId}" href="mailto:${email}"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+            <p class="text-center" id="email${currentStaffId}">${email}</p>
+        </section>`);
+    });
 
+    $('#cardModal').on('hidden.bs.modal', function () {
+        $("#cardModalContent").text('');
+    });
 
 //8- DATA DISPLAY
 function createCards(resultArray) {
@@ -501,16 +533,6 @@ function createList(resultArray) {
 }
 
 //9- GENERAL FUNCTIONALITY
-/*function refreshCurrentSelection() {
-    //Get new results. 
-    allResults = getAllDetails();
-    //Run the result through the filter system. 
-    filter();
-    //Save this new array as the currentSelection. 
-    //Create new cards. 
-    //displayResults(currentSelection)
-}*/
-
 function displayResults(results) {
     if (isCards) {
         createCards(results);
@@ -561,7 +583,9 @@ function alertInvalidEntry(modal) {
                     </div>`);
                     currentStaffId = result.data.id;
                     modalTimeout($("#addUpdateModal"));
-
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
@@ -720,6 +744,9 @@ function alertInvalidEntry(modal) {
                         ${fname} ${lname}, ${job} has been updated!
                     </div>`);
                     modalTimeout($("#addUpdateModal"));
+                    setTimeout(function() { 
+                        location.reload();
+                    }, 2000);
                 }
                 else if (result.status.code == 400 || result.status.code == 300) {
                     $("#addUpdateBody").append(`<div class="alert alert-danger" id="alert" role="alert">
