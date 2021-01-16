@@ -135,6 +135,10 @@ select {
 .staffMember {
     width: 330px;
     height: 280px;
+} 
+
+.cardPopup {
+    width: 100%;
 }
 
 img, 
@@ -165,6 +169,7 @@ button {
     font-family: 'Raleway', sans-serif;
 }
 
+
 @media only screen and (min-width: 1180px) {
     main {
         width: calc(100vw - 400px);
@@ -181,11 +186,8 @@ button {
         height: 70vh;
         overflow-y: scroll;
     }
-
-    .staffMember {
-        width: 310px;
-    }
 }
+
 
 /* Filter Menu */
 #sideMenu {
