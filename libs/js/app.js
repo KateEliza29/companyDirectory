@@ -115,6 +115,21 @@ function reduceList() {
     }
 }
 
+let toTop = $('#toTop');
+
+$(window).scroll(function() {
+  if ($(window).scrollTop() > 300) {
+    toTop.addClass('show');
+  } else {
+    toTop.removeClass('show');
+  }
+});
+
+toTop.on('click', function(e) {
+  e.preventDefault();
+  $('html, body').animate({scrollTop:0}, '300');
+});
+
 //4- FILTER MENU
 $('.tableBody').on('click', 'td', function(e) {
     addRemoveTicks(e);
@@ -261,7 +276,7 @@ function searchDatabase(searchTerm, searchType) {
         currentStaffId = isCards ? $(e.target).parent().parent().attr('id') : $(e.target).parent().parent().parent().attr('id');
         fillDetailsEditModal();
         $('#addUpdateLabel').html("<i class='fas fa-pen m-2'></i> Edit Staff Member");
-        $('#addUpdateConfirm').html("<i class='fas fa-save m-1'> Update");
+        $('#addUpdateConfirm').html("<i class='fas fa-save m-1'></i> Update");
     });
 
 
